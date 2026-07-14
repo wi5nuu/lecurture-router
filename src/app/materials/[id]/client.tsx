@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Download, Bookmark, Share2, Star,
+  ArrowLeft, Share2, Star,
   ExternalLink, Calendar, User, Building2, Quote,
-  FileText, Play, BookOpen, Globe, BarChart3, Tag,
+  FileText, BookOpen, Globe, BarChart3, Tag,
+  Copy, Printer, Check,
+  List, Clock, FileDown, Play,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,23 +25,150 @@ const formatColors: Record<string, string> = {
   "E-Book": "border-violet/20 bg-violet/5 text-violet",
 };
 
+function extractToC(content: string) {
+  const lines = content.split("\n");
+  const toc: { text: string; index: number }[] = [];
+  const pattern = /^(BAB|MODUL|SESI)\s+[\dIVXLCDM]+.*$/gim;
+  lines.forEach((line, i) => {
+    if (pattern.test(line.trim())) {
+      toc.push({ text: line.trim(), index: i });
+    }
+  });
+  return toc;
+}
+
+function estimateReadingTime(text: string) {
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return { words, minutes };
+}
+
+function generateCitation(m: Material, format: "apa" | "mla") {
+  const author = m.instructor || "Anonymous";
+  const year = m.year;
+  const title = m.title;
+  const source = m.source;
+  if (format === "apa") {
+    return `${author} (${year}). ${title}. ${source}.`;
+  }
+  return `${author}. "${title}." ${source}, ${year}.`;
+}
+
 interface Props {
   material: Material;
 }
 
 export function MaterialDetailClient({ material }: Props) {
+  const [copied, setCopied] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
+  const [citationCopied, setCitationCopied] = useState<"apa" | "mla" | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+
   const related = materials
     .filter((m) => m.category === material.category && m.id !== material.id)
     .slice(0, 3);
 
+  const paragraphs = material.fullContent
+    ? material.fullContent.split("\n\n").filter(Boolean)
+    : [];
+
+  const toc = extractToC(material.fullContent);
+  const { words, minutes } = estimateReadingTime(material.fullContent);
+
+  const handleCopy = useCallback(async () => {
+    const text = [
+      `Title: ${material.title}`,
+      `Author: ${material.instructor}`,
+      `University: ${material.university}`,
+      `Course: ${material.course}`,
+      `Year: ${material.year}`,
+      `Format: ${material.format}`,
+      `Source: ${material.source}`,
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  }, [material]);
+
+  const handleShare = useCallback(async () => {
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: material.title,
+          text: `${material.title} - ${material.instructor}`,
+          url: window.location.href,
+        });
+        return;
+      } catch {}
+    }
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareSuccess(true);
+      setTimeout(() => setShareSuccess(false), 2000);
+    } catch {}
+  }, [material]);
+
+  const handleDownload = useCallback(() => {
+    const content = [
+      material.title,
+      "=".repeat(material.title.length),
+      "",
+      `Author: ${material.instructor}`,
+      `University: ${material.university}`,
+      `Course: ${material.course}`,
+      `Year: ${material.year}`,
+      `Source: ${material.source}`,
+      "",
+      "-".repeat(40),
+      "",
+      material.fullContent,
+      "",
+      "-".repeat(40),
+      "",
+      "Citation:",
+      generateCitation(material, "apa"),
+    ].join("\n");
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${material.title.replace(/[^a-zA-Z0-9]/g, "_")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [material]);
+
+  const handlePrint = useCallback(() => {
+    setIsPrinting(true);
+    setTimeout(() => {
+      window.print();
+      setIsPrinting(false);
+    }, 100);
+  }, []);
+
+  const handleCopyCitation = useCallback(
+    async (format: "apa" | "mla") => {
+      const text = generateCitation(material, format);
+      try {
+        await navigator.clipboard.writeText(text);
+        setCitationCopied(format);
+        setTimeout(() => setCitationCopied(null), 2000);
+      } catch {}
+    },
+    [material]
+  );
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col print:min-h-0">
       <Header />
       <main className="flex-1">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 print:px-0 print:py-4">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald transition-colors mb-6"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-blue transition-colors mb-6 print:hidden"
           >
             <ArrowLeft className="h-4 w-4" /> Kembali ke Dashboard
           </Link>
@@ -50,10 +180,21 @@ export function MaterialDetailClient({ material }: Props) {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <Badge variant={material.price === "Gratis" ? "emerald" : material.price === "Freemium" ? "amber" : "blue"}>
+                  <Badge
+                    variant={
+                      material.price === "Gratis"
+                        ? "blue"
+                        : material.price === "Freemium"
+                          ? "amber"
+                          : "blue"
+                    }
+                  >
                     {material.price}
                   </Badge>
-                  <Badge variant="outline" className={formatColors[material.format]}>
+                  <Badge
+                    variant="outline"
+                    className={formatColors[material.format]}
+                  >
                     {material.format}
                   </Badge>
                   <Badge variant="outline">{material.level}</Badge>
@@ -65,7 +206,9 @@ export function MaterialDetailClient({ material }: Props) {
 
                 <div className="flex items-center gap-1.5 mb-4">
                   <Star className="h-4 w-4 text-amber fill-amber" />
-                  <span className="font-semibold text-sm">{material.rating}</span>
+                  <span className="font-semibold text-sm">
+                    {material.rating}
+                  </span>
                   <span className="text-sm text-muted-foreground">
                     ({material.reviewCount.toLocaleString()} ulasan)
                   </span>
@@ -86,23 +229,201 @@ export function MaterialDetailClient({ material }: Props) {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <Button className="bg-emerald hover:bg-emerald-dark gap-2">
+                <div className="flex flex-wrap gap-3 print:hidden">
+                  <Button className="bg-blue hover:bg-blue-dark gap-2">
                     <ExternalLink className="h-4 w-4" /> Akses Materi
                   </Button>
-                  <Button variant="outline" className="gap-2">
-                    <Download className="h-4 w-4" /> Unduh
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={handleDownload}
+                  >
+                    <FileDown className="h-4 w-4" /> Unduh
                   </Button>
-                  <Button variant="outline" className="gap-2">
-                    <Bookmark className="h-4 w-4" /> Simpan
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={handlePrint}
+                  >
+                    <Printer className="h-4 w-4" /> Cetak
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
-                    <Share2 className="h-4 w-4" />
+                  <Button variant="outline" className="gap-2" onClick={handleCopy}>
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4" /> Tersalin
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" /> Salin Info
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant={shareSuccess ? "default" : "ghost"}
+                    size="icon"
+                    className="h-10 w-10"
+                    onClick={handleShare}
+                  >
+                    {shareSuccess ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Share2 className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </motion.div>
 
-              <Card>
+              {material.fullContent && (
+                <>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground print:hidden">
+                    <span className="inline-flex items-center gap-1">
+                      <FileText className="h-4 w-4" />
+                      {words.toLocaleString()} kata
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      ~{minutes} menit baca
+                    </span>
+                    {material.isbn && (
+                      <span className="inline-flex items-center gap-1">
+                        <BookOpen className="h-4 w-4" />
+                        ISBN: {material.isbn}
+                      </span>
+                    )}
+                  </div>
+
+                  {toc.length > 0 && (
+                    <Card className="print:hidden">
+                      <CardContent className="p-6">
+                        <h3 className="font-semibold mb-3 inline-flex items-center gap-2">
+                          <List className="h-4 w-4" /> Daftar Isi
+                        </h3>
+                        <nav className="space-y-1">
+                          {toc.map((entry, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                const el = document.getElementById(
+                                  `section-${i}`
+                                );
+                                el?.scrollIntoView({ behavior: "smooth" });
+                              }}
+                              className="block w-full text-left text-sm text-muted-foreground hover:text-blue transition-colors py-1 px-2 rounded hover:bg-muted"
+                            >
+                              {entry.text}
+                            </button>
+                          ))}
+                        </nav>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Card>
+                    <CardContent className="p-4 sm:p-6">
+                      <h3 className="font-semibold mb-4 inline-flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" /> Konten Lengkap
+                      </h3>
+                      <div className="prose prose-sm dark:prose-invert max-w-none space-y-4 leading-relaxed">
+                        {paragraphs.map((para, i) => {
+                          const isHeading =
+                            /^(BAB|MODUL|SESI)\s+[\dIVXLCDM]+/i.test(
+                              para.trim()
+                            );
+                          if (isHeading) {
+                            return (
+                              <h4
+                                key={i}
+                                id={`section-${i}`}
+                                className="text-lg font-bold text-blue mt-6 mb-3 scroll-mt-24"
+                              >
+                                {para.trim()}
+                              </h4>
+                            );
+                          }
+                          return (
+                            <p
+                              key={i}
+                              className="text-sm sm:text-base text-foreground/90 leading-7 indent-0 first:indent-0"
+                            >
+                              {para
+                                .trim()
+                                .split("\n")
+                                .map((line, j) => (
+                                  <span key={j}>
+                                    {line}
+                                    {j < para.trim().split("\n").length - 1 && (
+                                      <br />
+                                    )}
+                                  </span>
+                                ))}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="print:break-inside-avoid">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold mb-4 inline-flex items-center gap-2">
+                        <Quote className="h-4 w-4" /> Sitasi
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="rounded-lg border border-border p-4 bg-muted/30">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">
+                                APA (7th ed.)
+                              </p>
+                              <p className="text-sm leading-relaxed">
+                                {generateCitation(material, "apa")}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0"
+                              onClick={() => handleCopyCitation("apa")}
+                            >
+                              {citationCopied === "apa" ? (
+                                <Check className="h-3.5 w-3.5 text-blue" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-border p-4 bg-muted/30">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">
+                                MLA (9th ed.)
+                              </p>
+                              <p className="text-sm leading-relaxed">
+                                {generateCitation(material, "mla")}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0"
+                              onClick={() => handleCopyCitation("mla")}
+                            >
+                              {citationCopied === "mla" ? (
+                                <Check className="h-3.5 w-3.5 text-blue" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              <Card className="print:hidden">
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4">Preview Materi</h3>
                   <div className="aspect-video rounded-lg bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
@@ -134,29 +455,44 @@ export function MaterialDetailClient({ material }: Props) {
                       <div className="flex items-start gap-3">
                         <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Universitas</p>
-                          <p className="font-medium">{material.university}</p>
+                          <p className="text-muted-foreground text-xs">
+                            Universitas
+                          </p>
+                          <p className="font-medium">
+                            {material.university}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Dosen/Instruktur</p>
-                          <p className="font-medium">{material.instructor}</p>
+                          <p className="text-muted-foreground text-xs">
+                            Dosen/Instruktur
+                          </p>
+                          <p className="font-medium">
+                            {material.instructor}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <BookOpen className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Mata Kuliah</p>
+                          <p className="text-muted-foreground text-xs">
+                            Mata Kuliah
+                          </p>
                           <p className="font-medium">{material.course}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <Globe className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Sumber</p>
-                          <Link href={`/providers/${material.provider}`} className="font-medium text-emerald hover:underline">
+                          <p className="text-muted-foreground text-xs">
+                            Sumber
+                          </p>
+                          <Link
+                            href={`/providers/${material.provider}`}
+                            className="font-medium text-blue hover:underline"
+                          >
                             {material.source}
                           </Link>
                         </div>
@@ -164,31 +500,52 @@ export function MaterialDetailClient({ material }: Props) {
                       <div className="flex items-start gap-3">
                         <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Tahun</p>
+                          <p className="text-muted-foreground text-xs">
+                            Tahun
+                          </p>
                           <p className="font-medium">{material.year}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <Quote className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Sitasi</p>
-                          <p className="font-medium font-mono">{material.citations.toLocaleString()} sitasi</p>
+                          <p className="text-muted-foreground text-xs">
+                            Sitasi
+                          </p>
+                          <p className="font-medium font-mono">
+                            {material.citations.toLocaleString()} sitasi
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <BarChart3 className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Bahasa</p>
+                          <p className="text-muted-foreground text-xs">
+                            Bahasa
+                          </p>
                           <p className="font-medium">{material.language}</p>
                         </div>
                       </div>
+                      {material.pages && (
+                        <div className="flex items-start gap-3">
+                          <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                          <div>
+                            <p className="text-muted-foreground text-xs">
+                              Halaman
+                            </p>
+                            <p className="font-medium">
+                              {material.pages} hlm
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
 
               {related.length > 0 && (
-                <Card>
+                <Card className="print:hidden">
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Materi Terkait</h3>
                     <div className="space-y-3">
@@ -198,12 +555,19 @@ export function MaterialDetailClient({ material }: Props) {
                           href={`/materials/${m.id}`}
                           className="block p-3 rounded-lg hover:bg-muted transition-colors"
                         >
-                          <p className="text-sm font-medium line-clamp-2 hover:text-emerald transition-colors">
+                          <p className="text-sm font-medium line-clamp-2 hover:text-blue transition-colors">
                             {m.title}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">{m.format}</Badge>
-                            <span className="text-xs text-muted-foreground">{m.source}</span>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              {m.format}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {m.source}
+                            </span>
                           </div>
                         </Link>
                       ))}

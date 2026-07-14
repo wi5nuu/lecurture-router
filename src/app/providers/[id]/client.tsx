@@ -46,7 +46,7 @@ export function ProviderDetailClient({ provider, materials }: Props) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           <Link
             href="/providers"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald transition-colors mb-6"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-blue transition-colors mb-6"
           >
             <ArrowLeft className="h-4 w-4" /> Kembali ke Providers
           </Link>
@@ -65,7 +65,7 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                     <div className="flex items-center gap-3 mb-2">
                       <h1 className="text-2xl sm:text-3xl font-bold">{provider.name}</h1>
                       <Badge variant={
-                        provider.priceModel === "Gratis" ? "emerald" :
+                        provider.priceModel === "Gratis" ? "blue" :
                         provider.priceModel === "Freemium" ? "amber" : "blue"
                       }>
                         {provider.priceModel}
@@ -203,7 +203,7 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                             whileInView={{ width: `${Math.min(100, (stat.count / Math.max(...formatStats.map((s) => s.count))) * 100)}%` }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="h-full rounded-full bg-emerald"
+                            className="h-full rounded-full bg-blue"
                           />
                         </div>
                       </div>

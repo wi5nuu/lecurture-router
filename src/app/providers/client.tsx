@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Search, SlidersHorizontal, Star, Database } from "lucide-react";
+import { Search, SlidersHorizontal, Star, Database, ArrowUpDown } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProviderCard } from "@/components/shared/provider-card";
@@ -14,24 +15,63 @@ import { cn } from "@/lib/utils";
 
 const priceFilters = ["Semua", "Gratis", "Freemium", "Premium", "Mixed"];
 
+const sortOptions = [
+  { label: "Nama A-Z", value: "name-asc" },
+  { label: "Nama Z-A", value: "name-desc" },
+  { label: "Rating Tertinggi", value: "rating-desc" },
+  { label: "Rating Terendah", value: "rating-asc" },
+  { label: "Materi Terbanyak", value: "materials-desc" },
+  { label: "Materi Tersedikit", value: "materials-asc" },
+] as const;
+
+type SortValue = (typeof sortOptions)[number]["value"];
+
 export function ProvidersClient() {
   const [search, setSearch] = useState("");
   const [priceFilter, setPriceFilter] = useState("Semua");
+  const [sort, setSort] = useState<SortValue>("name-asc");
 
-  const filtered = providers.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase());
-    const matchesPrice = priceFilter === "Semua" || p.priceModel === priceFilter;
-    return matchesSearch && matchesPrice;
-  });
+  const stats = useMemo(
+    () => ({
+      total: providers.length,
+      gratis: providers.filter((p) => p.priceModel === "Gratis").length,
+      freemium: providers.filter((p) => p.priceModel === "Freemium").length,
+      premium: providers.filter((p) => p.priceModel === "Premium").length,
+    }),
+    []
+  );
 
-  const stats = {
-    total: providers.length,
-    gratis: providers.filter((p) => p.priceModel === "Gratis").length,
-    freemium: providers.filter((p) => p.priceModel === "Freemium").length,
-    premium: providers.filter((p) => p.priceModel === "Premium").length,
-  };
+  const filtered = useMemo(() => {
+    let result = providers.filter((p) => {
+      const matchesSearch =
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.description.toLowerCase().includes(search.toLowerCase());
+      const matchesPrice =
+        priceFilter === "Semua" || p.priceModel === priceFilter;
+      return matchesSearch && matchesPrice;
+    });
+
+    result.sort((a, b) => {
+      switch (sort) {
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        case "rating-desc":
+          return b.rating - a.rating;
+        case "rating-asc":
+          return a.rating - b.rating;
+        case "materials-desc":
+          return b.totalMaterials - a.totalMaterials;
+        case "materials-asc":
+          return a.totalMaterials - b.totalMaterials;
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [search, priceFilter, sort]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,33 +84,34 @@ export function ProvidersClient() {
             className="mb-10"
           >
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-              Provider <span className="text-emerald">Materi</span>
+              Provider <span className="text-blue">Materi</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl">
-              Jelajahi semua sumber materi kuliah yang terintegrasi dengan LectureRouter.
-              Bandingkan berdasarkan jumlah materi, format, bahasa, dan model harga.
+              Jelajahi semua sumber materi kuliah yang terintegrasi dengan
+              LectureRouter. Bandingkan berdasarkan jumlah materi, format,
+              bahasa, dan model harga.
             </p>
           </motion.div>
 
-          <div className="flex flex-wrap gap-4 mb-8">
-            <div className="relative flex-1 min-w-[280px] max-w-md">
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="relative w-full sm:flex-1 sm:max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Cari provider..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                className="pl-10 w-full"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mb-1">
               {priceFilters.map((pf) => (
                 <button
                   key={pf}
                   onClick={() => setPriceFilter(pf)}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                    "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
                     priceFilter === pf
-                      ? "bg-emerald/10 text-emerald border border-emerald/20"
+                      ? "bg-blue/10 text-blue border border-blue/20"
                       : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
                   )}
                 >
@@ -80,30 +121,46 @@ export function ProvidersClient() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6 mb-8 text-sm">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-emerald" />
-              <span className="text-muted-foreground">Total:</span>
-              <span className="font-semibold font-mono">{stats.total}</span>
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            <div className="flex items-center gap-2 text-sm">
+              <Database className="h-4 w-4 text-blue shrink-0" />
+              <span className="text-muted-foreground whitespace-nowrap">
+                Total: <span className="font-semibold font-mono">{stats.total}</span> provider
+              </span>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="emerald" className="text-[10px] px-1.5 py-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="blue" className="text-[10px] px-1.5 py-0">
                 {stats.gratis} Gratis
               </Badge>
-            </div>
-            <div className="flex items-center gap-2">
               <Badge variant="amber" className="text-[10px] px-1.5 py-0">
                 {stats.freemium} Freemium
               </Badge>
-            </div>
-            <div className="flex items-center gap-2">
               <Badge variant="blue" className="text-[10px] px-1.5 py-0">
                 {stats.premium} Premium
               </Badge>
             </div>
+            <div className="flex items-center gap-2 ml-auto">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortValue)}
+                className="text-sm bg-transparent border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue/50"
+              >
+                {sortOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="text-sm text-muted-foreground mb-6">
+            Menampilkan <span className="font-semibold font-mono">{filtered.length}</span> dari{" "}
+            <span className="font-semibold font-mono">{stats.total}</span> provider
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((provider, i) => (
               <ProviderCard key={provider.id} provider={provider} index={i} />
             ))}
@@ -112,7 +169,9 @@ export function ProvidersClient() {
           {filtered.length === 0 && (
             <div className="text-center py-20">
               <Database className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Provider tidak ditemukan</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Provider tidak ditemukan
+              </h3>
               <p className="text-sm text-muted-foreground">
                 Coba ubah kata kunci pencarian Anda
               </p>

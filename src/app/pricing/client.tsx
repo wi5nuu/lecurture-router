@@ -35,7 +35,7 @@ export function PricingClient() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-16"
           >
-            <Badge variant="emerald" className="mb-4 px-3 py-1">Harga</Badge>
+            <Badge variant="blue" className="mb-4 px-3 py-1">Harga</Badge>
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
               Pilih Paket yang Tepat
             </h1>
@@ -55,13 +55,13 @@ export function PricingClient() {
                 whileHover={{ y: -4 }}
                 className={`relative rounded-2xl border p-8 transition-all duration-300 ${
                   tier.popular
-                    ? "border-emerald bg-gradient-to-b from-emerald/5 to-transparent shadow-xl shadow-emerald/10 scale-105 md:scale-110"
+                    ? "border-blue bg-gradient-to-b from-blue/5 to-transparent shadow-xl shadow-blue/10 scale-105 md:scale-110"
                     : "border-border bg-card hover:shadow-lg"
                 }`}
               >
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge variant="emerald" className="px-4 py-1 text-xs font-semibold">
+                    <Badge variant="blue" className="px-4 py-1 text-xs font-semibold">
                       POPULER
                     </Badge>
                   </div>
@@ -85,14 +85,14 @@ export function PricingClient() {
                 <ul className="space-y-3 mb-8">
                   {tier.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-3 text-sm">
-                      <Check className={`h-5 w-5 shrink-0 mt-0.5 ${tier.popular ? "text-emerald" : "text-muted-foreground"}`} />
+                      <Check className={`h-5 w-5 shrink-0 mt-0.5 ${tier.popular ? "text-blue" : "text-muted-foreground"}`} />
                       <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
                 <Link href={tier.id === "institution" ? "#" : "/register"}>
                   <Button
-                    variant={tier.popular ? "emerald" : "outline"}
+                    variant={tier.popular ? "blue" : "outline"}
                     className="w-full h-12 text-base gap-2"
                   >
                     {tier.cta} <ArrowRight className="h-4 w-4" />
@@ -116,7 +116,7 @@ export function PricingClient() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left p-4 font-semibold">Fitur</th>
-                    <th className="text-center p-4 font-semibold text-emerald">Free</th>
+                    <th className="text-center p-4 font-semibold text-blue">Free</th>
                     <th className="text-center p-4 font-semibold text-violet">Student Pro</th>
                     <th className="text-center p-4 font-semibold text-amber">Institution</th>
                   </tr>
@@ -127,21 +127,21 @@ export function PricingClient() {
                       <td className="p-4 text-muted-foreground">{row.feature}</td>
                       <td className="p-4 text-center">
                         {typeof row.free === "boolean" ? (
-                          row.free ? <Check className="h-4 w-4 text-emerald mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
+                          row.free ? <Check className="h-4 w-4 text-blue mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
                         ) : (
                           <span className="text-xs">{row.free}</span>
                         )}
                       </td>
                       <td className="p-4 text-center">
                         {typeof row.pro === "boolean" ? (
-                          row.pro ? <Check className="h-4 w-4 text-emerald mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
+                          row.pro ? <Check className="h-4 w-4 text-blue mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
                         ) : (
                           <span className="text-xs">{row.pro}</span>
                         )}
                       </td>
                       <td className="p-4 text-center">
                         {typeof row.inst === "boolean" ? (
-                          row.inst ? <Check className="h-4 w-4 text-emerald mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
+                          row.inst ? <Check className="h-4 w-4 text-blue mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
                         ) : (
                           <span className="text-xs">{row.inst}</span>
                         )}
@@ -157,15 +157,15 @@ export function PricingClient() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mt-16 p-12 rounded-2xl border border-border bg-gradient-to-br from-emerald/5 to-transparent"
+            className="text-center mt-16 p-12 rounded-2xl border border-border bg-gradient-to-br from-blue/5 to-transparent"
           >
-            <Sparkles className="h-8 w-8 text-emerald mx-auto mb-4" />
+            <Sparkles className="h-8 w-8 text-blue mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Butuh Paket Khusus untuk Institusi Anda?</h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
               Kami menyediakan harga khusus untuk universitas, politeknik, dan 
               institusi pendidikan dengan kebutuhan akses massal.
             </p>
-            <Button size="lg" className="bg-emerald hover:bg-emerald-dark gap-2">
+            <Button size="lg" className="bg-blue hover:bg-blue-dark gap-2">
               Hubungi Kami <ArrowRight className="h-4 w-4" />
             </Button>
           </motion.div>
