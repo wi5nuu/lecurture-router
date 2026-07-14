@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  firstName String
+  lastName  String
+  status    String     @default("Mahasiswa S1")
+  createdAt DateTime  @default(now())
+  bookmarks Bookmark[]
+}
+
+model Material {
+  id           String     @id
+  title        String
+  source       String
+  providerId   String
+  provider     Provider   @relation(fields: [providerId], references: [id])
+  course       String
+  format       String
+  language     String
+  level        String
+  year         Int
+  rating       Float
+  reviewCount  Int
+  price        String
+  accessUrl    String
+  description  String
+  fullContent  String
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id])
+  instructor   String
+  university   String
+  citations    Int
+  tags         String
+  thumbnail    String?
+  pages        Int?
+  duration     String?
+  isbn         String?
+  doi          String?
+  bookmarks    Bookmark[]
+}
+
+model Provider {
+  id             String     @id
+  name           String
+  logo           String
+  description    String
+  totalMaterials Int
+  formats        String
+  languages      String
+  priceModel     String
+  rating         Float
+  url            String
+  categories     String
+  established    Int
+  headquarters   String
+  materials      Material[]
+}
+
+model Category {
+  id            String     @id
+  name          String
+  icon          String
+  materialCount Int
+  description   String
+  color         String
+  materials     Material[]
+}
+
+model Bookmark {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, materialId])
+}
