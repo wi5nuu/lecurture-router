@@ -23,7 +23,7 @@ export function TrustedSources() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              className="text-sm font-semibold text-muted-foreground/60 hover:text-emerald transition-colors cursor-default"
+              className="text-sm font-semibold text-muted-foreground/60 hover:text-blue transition-colors cursor-default"
             >
               {name}
             </motion.div>

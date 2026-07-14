@@ -9,8 +9,8 @@ import Link from "next/link";
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald/5 via-transparent to-transparent" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-b from-blue/5 via-transparent to-transparent" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue/10 rounded-full blur-3xl" />
       <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-violet/10 rounded-full blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32">
@@ -19,7 +19,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald/30 bg-emerald/5 text-emerald text-sm font-medium mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue/30 bg-blue/5 text-blue text-sm font-medium mb-8"
           >
             <Sparkles className="h-4 w-4" />
             Platform Agregator Materi Kuliah #1 di Indonesia
@@ -31,7 +31,7 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6"
           >
-            <span className="bg-gradient-to-r from-emerald via-emerald to-violet bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue via-blue to-violet bg-clip-text text-transparent">
               Satu Akses
             </span>{" "}
             untuk Semua{" "}
@@ -67,7 +67,7 @@ export function Hero() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/register">
-              <Button size="xl" className="bg-emerald hover:bg-emerald-dark shadow-lg shadow-emerald/25 text-base gap-2">
+              <Button size="xl" className="bg-blue hover:bg-blue-dark shadow-lg shadow-blue/25 text-base gap-2">
                 Mulai Gratis
                 <ArrowRight className="h-5 w-5" />
               </Button>

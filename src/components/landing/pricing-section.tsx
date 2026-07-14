@@ -13,7 +13,7 @@ export function PricingSection() {
     <section className="py-20 sm:py-28 bg-muted/20" id="pricing">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection className="text-center mb-16">
-          <Badge variant="emerald" className="mb-4 px-3 py-1">Harga</Badge>
+          <Badge variant="blue" className="mb-4 px-3 py-1">Harga</Badge>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
             Pilih Paket yang Tepat
           </h2>
@@ -29,13 +29,13 @@ export function PricingSection() {
                 whileHover={{ y: -4 }}
                 className={`relative rounded-2xl border p-8 transition-all duration-300 ${
                   tier.popular
-                    ? "border-emerald bg-gradient-to-b from-emerald/5 to-transparent shadow-xl shadow-emerald/10"
+                    ? "border-blue bg-gradient-to-b from-blue/5 to-transparent shadow-xl shadow-blue/10"
                     : "border-border bg-card hover:shadow-lg"
                 }`}
               >
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge variant="emerald" className="px-4 py-1 text-xs font-semibold">
+                    <Badge variant="blue" className="px-4 py-1 text-xs font-semibold">
                       POPULER
                     </Badge>
                   </div>
@@ -62,7 +62,7 @@ export function PricingSection() {
                   {tier.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-3 text-sm">
                       {tier.popular ? (
-                        <Check className="h-5 w-5 text-emerald shrink-0 mt-0.5" />
+                        <Check className="h-5 w-5 text-blue shrink-0 mt-0.5" />
                       ) : (
                         <Check className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                       )}
@@ -73,7 +73,7 @@ export function PricingSection() {
 
                 <Link href={tier.id === "institution" ? "#" : "/register"}>
                   <Button
-                    variant={tier.popular ? "emerald" : "outline"}
+                    variant={tier.popular ? "blue" : "outline"}
                     className="w-full h-12 text-base"
                   >
                     {tier.cta}

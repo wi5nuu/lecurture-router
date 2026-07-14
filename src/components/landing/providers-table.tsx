@@ -9,7 +9,7 @@ import { providers } from "@/lib/data";
 import Link from "next/link";
 
 const priceColors: Record<string, string> = {
-  Gratis: "emerald",
+  Gratis: "blue",
   Freemium: "amber",
   Premium: "blue",
   Mixed: "violet",
@@ -58,7 +58,7 @@ export function ProvidersTable() {
                           {provider.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <Link href={`/providers/${provider.id}`} className="text-sm font-semibold hover:text-emerald transition-colors">
+                          <Link href={`/providers/${provider.id}`} className="text-sm font-semibold hover:text-blue transition-colors">
                             {provider.name}
                           </Link>
                           <p className="text-xs text-muted-foreground hidden lg:block">{provider.headquarters}</p>

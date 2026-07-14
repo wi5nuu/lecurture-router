@@ -25,7 +25,6 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const colorMap: Record<string, string> = {
-  emerald: "text-emerald bg-emerald/10 border-emerald/20",
   rose: "text-rose bg-rose/10 border-rose/20",
   amber: "text-amber bg-amber/10 border-amber/20",
   violet: "text-violet bg-violet/10 border-violet/20",
@@ -63,7 +62,7 @@ export function Categories() {
                 <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl border ${colorMap[cat.color]} transition-transform group-hover:scale-110`}>
                   {iconMap[cat.icon]}
                 </div>
-                <h3 className="text-sm font-semibold mb-1 group-hover:text-emerald transition-colors">
+                <h3 className="text-sm font-semibold mb-1 group-hover:text-blue transition-colors">
                   {cat.name}
                 </h3>
                 <p className="text-xs text-muted-foreground font-mono">

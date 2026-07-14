@@ -23,11 +23,11 @@ export function Testimonials() {
             <AnimatedItem key={t.id}>
               <motion.div
                 whileHover={{ y: -4 }}
-                className="relative p-6 rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-lg hover:border-emerald/30 dark:hover:border-emerald/20"
+                className="relative p-6 rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-lg hover:border-blue/30 dark:hover:border-blue/20"
               >
-                <Quote className="h-8 w-8 text-emerald/20 absolute top-4 right-4" />
+                <Quote className="h-8 w-8 text-blue/20 absolute top-4 right-4" />
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald/10 text-emerald font-semibold text-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue/10 text-blue font-semibold text-sm">
                     {t.avatar}
                   </div>
                   <div>

@@ -9,8 +9,8 @@ const steps = [
     icon: Search,
     title: "Cari Topik",
     description: "Ketik mata kuliah, topik, atau dosen yang Anda butuhkan. Mesin pencari kami akan menelusuri jutaan materi dari berbagai sumber.",
-    color: "from-emerald/20 to-emerald/5 border-emerald/20",
-    iconColor: "text-emerald bg-emerald/10",
+    color: "from-blue/20 to-blue/5 border-blue/20",
+    iconColor: "text-blue bg-blue/10",
   },
   {
     icon: Filter,
@@ -45,7 +45,7 @@ export function HowItWorks() {
           {steps.map((step, i) => (
             <AnimatedItem key={step.title}>
               <div className="relative p-8 rounded-2xl border border-border bg-gradient-to-br transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                <div className="absolute top-0 right-0 -mt-3 -mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-emerald text-white text-sm font-bold">
+                <div className="absolute top-0 right-0 -mt-3 -mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue text-white text-sm font-bold">
                   {i + 1}
                 </div>
                 <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-xl ${step.iconColor}`}>
