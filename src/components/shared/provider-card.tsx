@@ -22,21 +22,21 @@ export function ProviderCard({ provider, index = 0 }: ProviderCardProps) {
       transition={{ duration: 0.4, delay: index * 0.05 }}
     >
       <Link href={`/providers/${provider.id}`}>
-        <Card className="group h-full hover:shadow-lg hover:border-emerald/30 dark:hover:border-emerald/20 transition-all duration-300 cursor-pointer">
+        <Card className="group h-full hover:shadow-lg hover:border-blue/30 dark:hover:border-blue/20 transition-all duration-300 cursor-pointer">
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground">
                 {provider.name.slice(0, 2).toUpperCase()}
               </div>
               <Badge variant={
-                provider.priceModel === "Gratis" ? "emerald" :
+                provider.priceModel === "Gratis" ? "blue" :
                 provider.priceModel === "Freemium" ? "amber" : "blue"
               }>
                 {provider.priceModel}
               </Badge>
             </div>
 
-            <h3 className="font-semibold text-sm mb-1 group-hover:text-emerald transition-colors">
+            <h3 className="font-semibold text-sm mb-1 group-hover:text-blue transition-colors">
               {provider.name}
             </h3>
 

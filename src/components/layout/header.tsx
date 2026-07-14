@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,11 +22,11 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald text-white font-bold text-sm transition-transform group-hover:scale-105">
-            LR
+          <div className="relative h-9 w-9 overflow-hidden rounded-lg">
+            <Image src="/android-chrome-192x192.png" alt="LectureRouter" width={36} height={36} className="object-cover" />
           </div>
           <span className="text-lg font-bold tracking-tight">
-            Lecture<span className="text-emerald">Router</span>
+            Lecture<span className="text-blue">Router</span>
           </span>
         </Link>
 
@@ -48,7 +49,7 @@ export function Header() {
             </Button>
           </Link>
           <Link href="/register">
-            <Button size="sm" className="hidden sm:inline-flex bg-emerald hover:bg-emerald-dark">
+            <Button size="sm" className="hidden sm:inline-flex bg-blue hover:bg-blue-dark">
               Daftar Gratis
             </Button>
           </Link>
@@ -88,7 +89,7 @@ export function Header() {
               </Button>
             </Link>
             <Link href="/register" className="flex-1">
-              <Button className="w-full bg-emerald hover:bg-emerald-dark" size="sm">
+              <Button className="w-full bg-blue hover:bg-blue-dark" size="sm">
                 Daftar Gratis
               </Button>
             </Link>

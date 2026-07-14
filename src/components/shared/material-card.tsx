@@ -38,7 +38,7 @@ export function MaterialCard({ material, index = 0 }: MaterialCardProps) {
       whileHover={{ y: -4 }}
     >
       <Link href={`/materials/${material.id}`}>
-        <Card className="group h-full overflow-hidden hover:shadow-lg hover:border-emerald/30 dark:hover:border-emerald/20 transition-all duration-300 cursor-pointer">
+        <Card className="group h-full overflow-hidden hover:shadow-lg hover:border-blue/30 dark:hover:border-blue/20 transition-all duration-300 cursor-pointer">
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
               <div className={cn(
@@ -48,12 +48,12 @@ export function MaterialCard({ material, index = 0 }: MaterialCardProps) {
                 {formatIcons[material.format]}
                 {material.format}
               </div>
-              <Badge variant={material.price === "Gratis" ? "emerald" : material.price === "Freemium" ? "amber" : "blue"}>
+              <Badge variant={material.price === "Gratis" ? "blue" : material.price === "Freemium" ? "amber" : "blue"}>
                 {material.price}
               </Badge>
             </div>
 
-            <h3 className="font-semibold text-sm leading-snug mb-2 line-clamp-2 group-hover:text-emerald transition-colors">
+            <h3 className="font-semibold text-sm leading-snug mb-2 line-clamp-2 group-hover:text-blue transition-colors">
               {material.title}
             </h3>
 
@@ -76,10 +76,28 @@ export function MaterialCard({ material, index = 0 }: MaterialCardProps) {
                 <span className="text-xs text-muted-foreground">({material.reviewCount.toLocaleString()})</span>
               </div>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert("Materi ditambahkan ke bookmark!");
+                  }}
+                >
                   <Bookmark className="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert("Materi sedang diunduh...");
+                  }}
+                >
                   <Download className="h-3.5 w-3.5" />
                 </Button>
               </div>

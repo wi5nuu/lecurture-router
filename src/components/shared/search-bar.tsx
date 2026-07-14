@@ -17,8 +17,8 @@ export function SearchBar({ placeholder = "Cari mata kuliah, topik, atau dosen..
   return (
     <div className={cn("relative w-full", large && "max-w-2xl mx-auto")}>
       <div className={cn(
-        "relative flex items-center rounded-xl border border-border bg-background shadow-lg shadow-emerald/5 transition-all duration-300",
-        "focus-within:border-emerald/50 focus-within:shadow-emerald/10 focus-within:ring-1 focus-within:ring-emerald/30",
+        "relative flex items-center rounded-xl border border-border bg-background shadow-lg shadow-blue/5 transition-all duration-300",
+        "focus-within:border-blue/50 focus-within:shadow-blue/10 focus-within:ring-1 focus-within:ring-blue/30",
         large ? "h-16" : "h-12"
       )}>
         <Search className={cn(
@@ -48,7 +48,7 @@ export function SearchBar({ placeholder = "Cari mata kuliah, topik, atau dosen..
           </Button>
         </div>
         <Button className={cn(
-          "bg-emerald hover:bg-emerald-dark shrink-0",
+          "bg-blue hover:bg-blue-dark shrink-0",
           large ? "h-12 px-6 mr-2 rounded-lg" : "h-9 px-4 mr-1.5 rounded-md text-xs"
         )}>
           Cari
