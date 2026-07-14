@@ -3,16 +3,14 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { SearchBar } from "@/components/shared/search-bar";
 import { MaterialCard } from "@/components/shared/material-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   BookOpen, Filter, SlidersHorizontal, Grid3X3, List,
-  ChevronDown, X, GraduationCap, FlaskConical, Monitor,
+  X, GraduationCap, FlaskConical, Monitor,
   Settings, HeartPulse, TrendingUp, Scale, Users,
   BookOpen as BookOpenIcon, Palette, Sprout, Compass,
+  Search, Menu,
 } from "lucide-react";
 import { materials, categories } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -42,23 +40,67 @@ export function DashboardClient() {
   const [selectedLevel, setSelectedLevel] = useState("Semua");
   const [selectedPrice, setSelectedPrice] = useState("Semua");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const ITEMS_PER_PAGE = 6;
 
   const filtered = materials.filter((m) => {
     if (selectedCategory && m.category !== selectedCategory) return false;
     if (selectedFormat !== "Semua" && m.format !== selectedFormat) return false;
     if (selectedLevel !== "Semua" && m.level !== selectedLevel) return false;
     if (selectedPrice !== "Semua" && m.price !== selectedPrice) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchTitle = m.title.toLowerCase().includes(q);
+      const matchDesc = m.description.toLowerCase().includes(q);
+      const matchTags = m.tags.some((t) => t.toLowerCase().includes(q));
+      if (!matchTitle && !matchDesc && !matchTags) return false;
+    }
     return true;
   });
 
+  const hasActiveFilters =
+    selectedCategory !== null ||
+    selectedFormat !== "Semua" ||
+    selectedLevel !== "Semua" ||
+    selectedPrice !== "Semua" ||
+    searchQuery !== "";
+
+  const displayed = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+
+  const loadMore = () => setVisibleCount((p) => p + ITEMS_PER_PAGE);
+
+  const clearFilters = () => {
+    setSelectedCategory(null);
+    setSelectedFormat("Semua");
+    setSelectedLevel("Semua");
+    setSelectedPrice("Semua");
+    setSearchQuery("");
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden">
       <Header />
-      <div className="flex-1 flex">
+
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      <div className="flex-1 flex w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <aside
           className={cn(
-            "w-64 border-r border-border/50 bg-muted/20 flex-shrink-0 transition-all duration-300 hidden md:block",
-            !sidebarOpen && "w-0 overflow-hidden"
+            "border-r border-border/50 bg-muted/20 flex-shrink-0 transition-all duration-300",
+            "fixed inset-y-0 left-0 z-40 w-64 pt-16",
+            mobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
+            "md:relative md:inset-auto md:z-auto md:block md:translate-x-0 md:pt-0",
+            sidebarOpen ? "md:w-64" : "md:w-0 md:overflow-hidden md:border-r-0"
           )}
         >
           <div className="p-4">
@@ -66,17 +108,17 @@ export function DashboardClient() {
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Kategori
               </h3>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setSidebarOpen(false)}>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setSidebarOpen(false); setMobileSidebarOpen(false); }}>
                 <X className="h-3 w-3" />
               </Button>
             </div>
             <div className="space-y-1">
               <button
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => { setSelectedCategory(null); setMobileSidebarOpen(false); }}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
                   !selectedCategory
-                    ? "bg-emerald/10 text-emerald font-medium"
+                    ? "bg-blue/10 text-blue font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
@@ -88,11 +130,11 @@ export function DashboardClient() {
               {categories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  onClick={() => { setSelectedCategory(cat.id); setMobileSidebarOpen(false); }}
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
                     selectedCategory === cat.id
-                      ? "bg-emerald/10 text-emerald font-medium"
+                      ? "bg-blue/10 text-blue font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent"
                   )}
                 >
@@ -109,8 +151,16 @@ export function DashboardClient() {
 
         <main className="flex-1 min-w-0">
           <div className="p-4 sm:p-6 lg:p-8">
-            <div className="max-w-6xl mx-auto">
+            <div className="mx-auto">
               <div className="flex items-center gap-4 mb-6">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 md:hidden"
+                  onClick={() => setMobileSidebarOpen(true)}
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -119,78 +169,144 @@ export function DashboardClient() {
                 >
                   <SlidersHorizontal className="h-4 w-4" />
                 </Button>
-                <div className="flex-1">
-                  <SearchBar placeholder="Cari dalam dashboard..." />
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari dalam dashboard..."
+                    className="flex h-10 w-full rounded-xl border border-border bg-background pl-10 pr-9 text-sm outline-none focus:border-blue/50 focus:ring-1 focus:ring-blue/30 transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 mb-6">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mr-2">
-                  <Filter className="h-3.5 w-3.5" />
-                  Filter:
-                </div>
-                {formats.map((fmt) => (
-                  <button
-                    key={fmt}
-                    onClick={() => setSelectedFormat(fmt)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                      selectedFormat === fmt
-                        ? "bg-emerald/10 text-emerald border border-emerald/20"
-                        : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
-                    )}
-                  >
-                    {fmt}
-                  </button>
-                ))}
-                <span className="w-px h-5 bg-border mx-1" />
-                {levels.map((lv) => (
-                  <button
-                    key={lv}
-                    onClick={() => setSelectedLevel(lv)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                      selectedLevel === lv
-                        ? "bg-emerald/10 text-emerald border border-emerald/20"
-                        : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
-                    )}
-                  >
-                    {lv}
-                  </button>
-                ))}
-                <span className="w-px h-5 bg-border mx-1" />
-                {prices.map((pr) => (
-                  <button
-                    key={pr}
-                    onClick={() => setSelectedPrice(pr)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                      selectedPrice === pr
-                        ? "bg-emerald/10 text-emerald border border-emerald/20"
-                        : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
-                    )}
-                  >
-                    {pr}
-                  </button>
-                ))}
               </div>
 
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-muted-foreground">
                   Menampilkan <span className="font-semibold text-foreground">{filtered.length}</span> materi
                 </p>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                <div className="flex items-center gap-1">
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setFilterOpen(!filterOpen)}
+                      className={cn("h-8 w-8", filterOpen && "text-blue bg-blue/10")}
+                    >
+                      <Filter className="h-4 w-4" />
+                      {(selectedFormat !== "Semua" || selectedLevel !== "Semua" || selectedPrice !== "Semua") && (
+                        <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue text-[8px] font-bold text-white">
+                          {(selectedFormat !== "Semua" ? 1 : 0) + (selectedLevel !== "Semua" ? 1 : 0) + (selectedPrice !== "Semua" ? 1 : 0)}
+                        </span>
+                      )}
+                    </Button>
+                    {filterOpen && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setFilterOpen(false)} />
+                        <div className="absolute right-0 top-full mt-2 z-20 w-72 rounded-xl border border-border bg-card shadow-xl p-4 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Filter</p>
+                            {hasActiveFilters && (
+                              <button onClick={clearFilters} className="text-xs text-blue hover:underline">Reset</button>
+                            )}
+                          </div>
+                          <div className="h-px bg-border/50" />
+                          <div>
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Format</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {formats.map((fmt) => (
+                                <button
+                                  key={fmt}
+                                  onClick={() => setSelectedFormat(fmt)}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                    selectedFormat === fmt
+                                      ? "bg-blue/10 text-blue border border-blue/20"
+                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                                  )}
+                                >
+                                  {fmt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="h-px bg-border/50" />
+                          <div>
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Level</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {levels.map((lv) => (
+                                <button
+                                  key={lv}
+                                  onClick={() => setSelectedLevel(lv)}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                    selectedLevel === lv
+                                      ? "bg-blue/10 text-blue border border-blue/20"
+                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                                  )}
+                                >
+                                  {lv}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="h-px bg-border/50" />
+                          <div>
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Harga</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {prices.map((pr) => (
+                                <button
+                                  key={pr}
+                                  onClick={() => setSelectedPrice(pr)}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                    selectedPrice === pr
+                                      ? "bg-blue/10 text-blue border border-blue/20"
+                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                                  )}
+                                >
+                                  {pr}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-8 w-8", viewMode === "grid" && "text-blue bg-blue/10")}
+                    onClick={() => setViewMode("grid")}
+                  >
                     <Grid3X3 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-8 w-8", viewMode === "list" && "text-blue bg-blue/10")}
+                    onClick={() => setViewMode("list")}
+                  >
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filtered.map((material, i) => (
+              <div className={cn(
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                  : "flex flex-col gap-3"
+              )}>
+                {displayed.map((material, i) => (
                   <MaterialCard key={material.id} material={material} index={i} />
                 ))}
               </div>
@@ -202,6 +318,14 @@ export function DashboardClient() {
                   <p className="text-sm text-muted-foreground">
                     Coba ubah filter atau kata kunci pencarian Anda
                   </p>
+                </div>
+              )}
+
+              {hasMore && (
+                <div className="flex justify-center mt-8">
+                  <Button variant="outline" onClick={loadMore} className="px-8">
+                    Muat Lebih Banyak ({filtered.length - visibleCount} tersisa)
+                  </Button>
                 </div>
               )}
             </div>
