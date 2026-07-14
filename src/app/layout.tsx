@@ -18,6 +18,15 @@ export const metadata: Metadata = {
     default: "LectureRouter - Satu Akses untuk Semua Materi Kuliah",
     template: "%s | LectureRouter",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png" }],
+  },
+  manifest: "/site.webmanifest",
   description:
     "Platform agregator materi kuliah dari seluruh dunia. Akses instan ke jutaan jurnal, e-book, video kuliah, dan catatan mahasiswa dari ribuan universitas terbaik.",
   keywords: [
@@ -63,7 +72,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen bg-background text-foreground antialiased w-full max-w-full overflow-x-hidden">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
