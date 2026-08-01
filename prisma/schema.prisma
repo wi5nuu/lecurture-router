@@ -4,85 +4,314 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  password  String
-  firstName String
-  lastName  String
-  status    String     @default("Mahasiswa S1")
-  createdAt DateTime  @default(now())
-  bookmarks Bookmark[]
+  id                String              @id @default(uuid())
+  email             String              @unique
+  password          String
+  firstName         String
+  lastName          String
+  status            String              @default("Mahasiswa S1")
+  role              UserRole            @default(USER)
+  emailVerified     Boolean             @default(false)
+  emailVerifiedAt   DateTime?
+  verificationToken String?             @unique
+  resetToken        String?             @unique
+  resetTokenExpiry  DateTime?
+  lastLoginAt       DateTime?
+  lastLoginIp       String?
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  // Relations
+  bookmarks         Bookmark[]
+  refreshTokens     RefreshToken[]
+  subscription      Subscription?
+  usageMetrics      UsageMetric[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  apiKeys           ApiKey[]
+  searchHistory     SearchHistory[]
+  
+  @@index([email])
+  @@index([role])
+  @@index([emailVerified])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
 }
 
 model Material {
-  id           String     @id
+  id           String     @id @default(uuid())
   title        String
   source       String
   providerId   String
-  provider     Provider   @relation(fields: [providerId], references: [id])
+  provider     Provider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
   course       String
   format       String
   language     String
   level        String
   year         Int
-  rating       Float
-  reviewCount  Int
+  rating       Float      @default(0)
+  reviewCount  Int        @default(0)
   price        String
   accessUrl    String
-  description  String
-  fullContent  String
+  description  String     @db.Text
+  fullContent  String     @db.Text
   categoryId   String
   category     Category   @relation(fields: [categoryId], references: [id])
   instructor   String
   university   String
-  citations    Int
+  citations    Int        @default(0)
   tags         String
   thumbnail    String?
   pages        Int?
   duration     String?
   isbn         String?
   doi          String?
+  viewCount    Int        @default(0)
+  downloadCount Int       @default(0)
+  isPublished  Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
   bookmarks    Bookmark[]
+  
+  @@index([providerId])
+  @@index([categoryId])
+  @@index([title])
+  @@index([isPublished])
+  @@fulltext([title, description, tags])
+  @@map("materials")
 }
 
 model Provider {
-  id             String     @id
-  name           String
+  id             String     @id @default(uuid())
+  name           String     @unique
   logo           String
-  description    String
-  totalMaterials Int
+  description    String     @db.Text
+  totalMaterials Int        @default(0)
   formats        String
   languages      String
   priceModel     String
-  rating         Float
+  rating         Float      @default(0)
   url            String
   categories     String
   established    Int
   headquarters   String
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  
   materials      Material[]
+  
+  @@index([name])
+  @@index([isActive])
+  @@map("providers")
 }
 
 model Category {
-  id            String     @id
-  name          String
+  id            String     @id @default(uuid())
+  name          String     @unique
   icon          String
-  materialCount Int
+  materialCount Int        @default(0)
   description   String
   color         String
+  slug          String     @unique
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
   materials     Material[]
+  
+  @@index([slug])
+  @@index([isActive])
+  @@map("categories")
 }
 
 model Bookmark {
   id         String   @id @default(uuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   materialId String
-  material   Material @relation(fields: [materialId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  notes      String?  @db.Text
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([userId, materialId])
+  @@index([userId])
+  @@index([materialId])
+  @@map("bookmarks")
+}
+
+// Subscription & Billing Models
+model Subscription {
+  id                String             @id @default(uuid())
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan              SubscriptionPlan   @default(FREE)
+  status            SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId  String?            @unique
+  stripeSubscriptionId String?         @unique
+  stripePriceId     String?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd Boolean            @default(false)
+  canceledAt        DateTime?
+  trialStart        DateTime?
+  trialEnd          DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  invoices          Invoice[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([plan])
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id               String       @id @default(uuid())
+  subscriptionId   String
+  subscription     Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  stripeInvoiceId  String       @unique
+  amount           Int
+  currency         String       @default("usd")
+  status           String
+  invoiceUrl       String?
+  invoicePdf       String?
+  dueDate          DateTime?
+  paidAt           DateTime?
+  createdAt        DateTime     @default(now())
+  
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("invoices")
+}
+
+// Usage Metrics & Analytics
+model UsageMetric {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metric       String
+  value        Int
+  metadata     Json?
+  recordedAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([metric])
+  @@index([recordedAt])
+  @@map("usage_metrics")
+}
+
+// Notifications
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  type      String
+  isRead    Boolean  @default(false)
+  link      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// Audit Logs
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  resource  String
+  resourceId String?
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// API Keys for API access
+model ApiKey {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  key         String   @unique
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([key])
+  @@index([isActive])
+  @@map("api_keys")
+}
+
+// Search History for analytics
+model SearchHistory {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  query     String
+  filters   Json?
+  resultCount Int    @default(0)
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@map("search_history")
 }
