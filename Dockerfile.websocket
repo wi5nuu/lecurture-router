@@ -1,0 +1,32 @@
+# WebSocket Server Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY src ./src
+COPY tsconfig.json ./
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Set environment
+ENV NODE_ENV=production
+ENV WS_PORT=3001
+
+# Expose WebSocket port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
+  CMD node -e "require('net').connect(3001, 'localhost').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"
+
+# Start WebSocket server
+CMD ["npx", "tsx", "src/server/websocket.ts"]
