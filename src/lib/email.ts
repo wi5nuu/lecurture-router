@@ -1,7 +1,17 @@
 import { Resend } from 'resend';
 import { logger } from './logger';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | undefined;
+
+function getResend(): Resend {
+  if (!resendClient) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not defined in environment variables');
+    }
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
+}
 
 const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@lecturerouter.com';
 const APP_NAME = 'LectureRouter';
@@ -13,7 +23,7 @@ export async function sendVerificationEmail(
   verificationUrl: string
 ): Promise<void> {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `Verify your ${APP_NAME} account`,
@@ -75,7 +85,7 @@ export async function sendPasswordResetEmail(
   resetUrl: string
 ): Promise<void> {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `Reset your ${APP_NAME} password`,
@@ -137,7 +147,7 @@ export async function sendPasswordResetEmail(
 // Welcome email
 export async function sendWelcomeEmail(to: string, firstName: string): Promise<void> {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `Welcome to ${APP_NAME}!`,
@@ -212,7 +222,7 @@ export async function sendSubscriptionEmail(
   };
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `${APP_NAME} Subscription Update`,
@@ -273,7 +283,7 @@ export async function sendNotificationEmail(
   message: string
 ): Promise<void> {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `${APP_NAME} - ${subject}`,
