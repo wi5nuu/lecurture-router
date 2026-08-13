@@ -1,63 +1,49 @@
-import Database from "better-sqlite3";
-import path from "path";
-import { categories, providers, materials } from "../src/lib/data";
+import { PrismaClient } from '../src/generated/prisma';
+import bcrypt from 'bcryptjs';
 
-const db = new Database(path.join(process.cwd(), "dev.db"));
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+const prisma = new PrismaClient();
 
-function seed() {
-  console.log("Seeding database...");
+async function seed() {
+  console.log('Seeding database...');
 
-  const insertCategory = db.prepare(`
-    INSERT OR REPLACE INTO Category (id, name, icon, materialCount, description, color)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `);
-  for (const cat of categories) {
-    insertCategory.run(cat.id, cat.name, cat.icon, cat.materialCount, cat.description, cat.color);
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@lecturerouter.com';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123!';
+
+  const existing = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
+
+  if (!existing) {
+    const hashedPassword = await bcrypt.hash(adminPassword, 12);
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        password: hashedPassword,
+        firstName: 'Admin',
+        lastName: 'LectureRouter',
+        role: 'ADMIN',
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
+        isActive: true,
+      },
+    });
+    console.log(`Admin user created: ${adminEmail}`);
+  } else {
+    console.log(`Admin user already exists: ${adminEmail}`);
   }
-  console.log(`Seeded ${categories.length} categories`);
 
-  const insertProvider = db.prepare(`
-    INSERT OR REPLACE INTO Provider (id, name, logo, description, totalMaterials, formats, languages, priceModel, rating, url, categories, established, headquarters)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  for (const prov of providers) {
-    insertProvider.run(
-      prov.id, prov.name, prov.logo, prov.description, prov.totalMaterials,
-      JSON.stringify(prov.formats), JSON.stringify(prov.languages),
-      prov.priceModel, prov.rating, prov.url,
-      JSON.stringify(prov.categories), prov.established, prov.headquarters
-    );
-  }
-  console.log(`Seeded ${providers.length} providers`);
-
-  const insertMaterial = db.prepare(`
-    INSERT OR REPLACE INTO Material (id, title, source, providerId, course, format, language, level, year, rating, reviewCount, price, accessUrl, description, fullContent, categoryId, instructor, university, citations, tags, thumbnail, pages, duration, isbn, doi)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  for (const mat of materials) {
-    insertMaterial.run(
-      mat.id, mat.title, mat.source, mat.provider, mat.course,
-      mat.format, mat.language, mat.level, mat.year,
-      mat.rating, mat.reviewCount, mat.price, mat.accessUrl,
-      mat.description, mat.fullContent, mat.category,
-      mat.instructor, mat.university, mat.citations,
-      JSON.stringify(mat.tags),
-      mat.thumbnail ?? null, mat.pages ?? null, mat.duration ?? null,
-      mat.isbn ?? null, mat.doi ?? null
-    );
-  }
-  console.log(`Seeded ${materials.length} materials`);
-
-  console.log("Seeding complete!");
+  console.log('');
+  console.log('Seeding complete!');
+  console.log('');
+  console.log('NOTE: Materials, providers, and categories now live in Firebase Firestore.');
+  console.log('      Seed the catalog with:  npm run firebase:seed');
 }
 
-try {
-  seed();
-} catch (e) {
-  console.error("Seed failed:", e);
-  process.exit(1);
-} finally {
-  db.close();
-}
+seed()
+  .catch((e) => {
+    console.error('Seed failed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
