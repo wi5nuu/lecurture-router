@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
@@ -9,8 +9,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email wajib diisi" }, { status: 400 });
     }
 
-    const db = getDb();
-    const user = db.prepare("SELECT id FROM User WHERE email = ?").get(email);
+    
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true }
+    });
 
     return NextResponse.json({
       message: user

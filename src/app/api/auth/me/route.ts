@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
 import { verifyToken } from "@/lib/auth";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
@@ -15,10 +15,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const db = getDb();
-    const user = db.prepare(
-      "SELECT id, email, firstName, lastName, status, createdAt FROM User WHERE id = ?"
-    ).get(payload.userId) as { id: string; email: string; firstName: string; lastName: string; status: string; createdAt: string } | undefined;
+    
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        status: true,
+        createdAt: true
+      }
+    });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

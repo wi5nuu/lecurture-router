@@ -22,7 +22,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const planConfig = SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS];
+    // The type `keyof typeof SUBSCRIPTION_PLANS` includes FREE, which has no stripePriceId.
+    // We can cast the planConfig to any or use in operator.
+    const planConfig = SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS] as any;
     
     if (!planConfig.stripePriceId) {
       return NextResponse.json(

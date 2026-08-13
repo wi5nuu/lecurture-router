@@ -9,7 +9,8 @@ import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting - stricter for login attempts
-    const rateLimitResult = await rateLimitMiddleware(request, `login:${request.ip}`);
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+    const rateLimitResult = await rateLimitMiddleware(request, `login:${ip}`);
     if (!rateLimitResult.allowed && rateLimitResult.response) {
       return rateLimitResult.response;
     }
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: {
         lastLoginAt: new Date(),
-        lastLoginIp: request.ip || null,
+        lastLoginIp: ip || null,
       },
     });
 
