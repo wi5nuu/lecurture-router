@@ -1,39 +1,53 @@
-import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { getMaterialWithRelated, incrementMaterialViews } from "@/lib/firestore";
+import { FirebaseNotConfiguredError } from "@/lib/firebase";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const db = getDb();
-    const material = db.prepare("SELECT * FROM Material WHERE id = ?").get(id) as Record<string, unknown> | undefined;
 
-    if (!material) {
+    const result = await getMaterialWithRelated(id);
+
+    if (!result) {
       return NextResponse.json({ error: "Material not found" }, { status: 404 });
     }
 
-    const provider = db.prepare("SELECT * FROM Provider WHERE id = ?").get(material.providerId);
-    const category = db.prepare("SELECT * FROM Category WHERE id = ?").get(material.categoryId);
+    const { material, related } = result;
 
-    const related = db.prepare(
-      "SELECT * FROM Material WHERE categoryId = ? AND id != ? ORDER BY rating DESC LIMIT 6"
-    ).all(material.categoryId, id) as Array<Record<string, unknown>>;
-
-    return NextResponse.json({
-      material: {
-        ...material,
-        tags: JSON.parse(material.tags as string),
-        provider,
-        category,
-        relatedMaterials: related.map((r) => ({
-          ...r,
-          tags: JSON.parse(r.tags as string),
-        })),
+    const formattedMaterial = {
+      ...material,
+      tags: material.tags ?? [],
+      provider: {
+        id: material.providerId,
+        name: material.providerName,
+        logo: material.providerLogo ?? null,
       },
-    });
+      category: {
+        id: material.categoryId,
+        name: material.categoryName,
+      },
+      relatedMaterials: related.map((r) => ({
+        ...r,
+        tags: r.tags ?? [],
+        provider: {
+          id: r.providerId,
+          name: r.providerName,
+          logo: r.providerLogo ?? null,
+        },
+      })),
+    };
+
+    void incrementMaterialViews(id).catch(() => {});
+
+    return NextResponse.json({ material: formattedMaterial });
   } catch (error) {
+    if (error instanceof FirebaseNotConfiguredError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    console.error("Failed to fetch material:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
