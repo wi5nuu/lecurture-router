@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, SlidersHorizontal, Star, Database, ArrowUpDown } from "lucide-react";
+import { Search, Database, ArrowUpDown, Loader2, RefreshCw } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProviderCard } from "@/components/shared/provider-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { providers, type Provider } from "@/lib/data";
+import { type Provider } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 const priceFilters = ["Semua", "Gratis", "Freemium", "Premium", "Mixed"];
@@ -26,10 +25,98 @@ const sortOptions = [
 
 type SortValue = (typeof sortOptions)[number]["value"];
 
+interface ApiProvider {
+  id: string;
+  name: string;
+  logo: string;
+  description: string;
+  totalMaterials: number;
+  formats: string[];
+  languages: string[];
+  priceModel: string;
+  rating: number;
+  url: string;
+  categories: string[];
+  established: number;
+  headquarters: string;
+}
+
+function toProvider(p: ApiProvider): Provider {
+  return {
+    id: p.id,
+    name: p.name,
+    logo: p.logo,
+    description: p.description,
+    totalMaterials: p.totalMaterials,
+    formats: p.formats ?? [],
+    languages: p.languages ?? [],
+    priceModel: p.priceModel as Provider["priceModel"],
+    rating: p.rating,
+    url: p.url,
+    categories: p.categories ?? [],
+    established: p.established,
+    headquarters: p.headquarters,
+  };
+}
+
+async function fetchProviders(): Promise<Provider[]> {
+  const res = await fetch("/api/providers?sort=rating");
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error || "Gagal memuat provider");
+  }
+  const data = await res.json();
+  return (data.providers ?? []).map(toProvider);
+}
+
 export function ProvidersClient() {
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [priceFilter, setPriceFilter] = useState("Semua");
   const [sort, setSort] = useState<SortValue>("name-asc");
+
+  const handleRetry = () => {
+    setLoading(true);
+    setLoadError(null);
+    void (async () => {
+      try {
+        setProviders(await fetchProviders());
+      } catch (error) {
+        setLoadError(
+          error instanceof Error ? error.message : "Terjadi kesalahan"
+        );
+      } finally {
+        setLoading(false);
+      }
+    })();
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function run() {
+      try {
+        const data = await fetchProviders();
+        if (cancelled) return;
+        setProviders(data);
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error ? error.message : "Terjadi kesalahan"
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const stats = useMemo(
     () => ({
@@ -38,11 +125,11 @@ export function ProvidersClient() {
       freemium: providers.filter((p) => p.priceModel === "Freemium").length,
       premium: providers.filter((p) => p.priceModel === "Premium").length,
     }),
-    []
+    [providers]
   );
 
   const filtered = useMemo(() => {
-    let result = providers.filter((p) => {
+    const result = providers.filter((p) => {
       const matchesSearch =
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.description.toLowerCase().includes(search.toLowerCase());
@@ -71,7 +158,7 @@ export function ProvidersClient() {
     });
 
     return result;
-  }, [search, priceFilter, sort]);
+  }, [search, priceFilter, sort, providers]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -161,12 +248,32 @@ export function ProvidersClient() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((provider, i) => (
+            {loading && (
+              <div className="col-span-full flex flex-col items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 text-blue animate-spin mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  Memuat provider dari Firebase...
+                </p>
+              </div>
+            )}
+
+            {!loading && loadError && (
+              <div className="col-span-full text-center py-20">
+                <Database className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Gagal memuat provider</h3>
+                <p className="text-sm text-muted-foreground mb-4">{loadError}</p>
+                <Button variant="outline" className="gap-2" onClick={handleRetry}>
+                  <RefreshCw className="h-4 w-4" /> Coba Lagi
+                </Button>
+              </div>
+            )}
+
+            {!loading && !loadError && filtered.map((provider, i) => (
               <ProviderCard key={provider.id} provider={provider} index={i} />
             ))}
           </div>
 
-          {filtered.length === 0 && (
+          {!loading && !loadError && filtered.length === 0 && (
             <div className="text-center py-20">
               <Database className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
