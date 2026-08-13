@@ -1,36 +1,34 @@
-import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { getProviderWithMaterials } from "@/lib/firestore";
+import { FirebaseNotConfiguredError } from "@/lib/firebase";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const db = getDb();
-    const provider = db.prepare("SELECT * FROM Provider WHERE id = ?").get(id) as Record<string, unknown> | undefined;
 
-    if (!provider) {
+    const result = await getProviderWithMaterials(id);
+
+    if (!result) {
       return NextResponse.json({ error: "Provider not found" }, { status: 404 });
     }
 
-    const materials = db.prepare(
-      "SELECT * FROM Material WHERE providerId = ? ORDER BY rating DESC"
-    ).all(id) as Array<Record<string, unknown>>;
+    const { provider, materials } = result;
 
     return NextResponse.json({
-      provider: {
-        ...provider,
-        formats: JSON.parse(provider.formats as string),
-        languages: JSON.parse(provider.languages as string),
-        categories: JSON.parse(provider.categories as string),
-      },
+      provider,
       materials: materials.map((m) => ({
         ...m,
-        tags: JSON.parse(m.tags as string),
+        tags: m.tags ?? [],
       })),
     });
   } catch (error) {
+    if (error instanceof FirebaseNotConfiguredError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    console.error("Failed to fetch provider:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
