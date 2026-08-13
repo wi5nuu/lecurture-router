@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { type Material } from "@/lib/data";
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
@@ -13,10 +14,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MaterialCard } from "@/components/shared/material-card";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { materials, type Material } from "@/lib/data";
 
 const formatColors: Record<string, string> = {
   PDF: "border-rose/20 bg-rose/5 text-rose",
@@ -56,17 +55,14 @@ function generateCitation(m: Material, format: "apa" | "mla") {
 
 interface Props {
   material: Material;
+  related: Material[];
 }
 
-export function MaterialDetailClient({ material }: Props) {
+export function MaterialDetailClient({ material, related }: Props) {
   const [copied, setCopied] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
   const [citationCopied, setCitationCopied] = useState<"apa" | "mla" | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
-
-  const related = materials
-    .filter((m) => m.category === material.category && m.id !== material.id)
-    .slice(0, 3);
 
   const paragraphs = material.fullContent
     ? material.fullContent.split("\n\n").filter(Boolean)
