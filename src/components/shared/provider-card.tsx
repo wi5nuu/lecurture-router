@@ -28,10 +28,15 @@ export function ProviderCard({ provider, index = 0 }: ProviderCardProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground">
                 {provider.name.slice(0, 2).toUpperCase()}
               </div>
-              <Badge variant={
-                provider.priceModel === "Gratis" ? "blue" :
-                provider.priceModel === "Freemium" ? "amber" : "blue"
-              }>
+              <Badge
+                variant={
+                  provider.priceModel === "Gratis"
+                    ? "blue"
+                    : provider.priceModel === "Freemium"
+                      ? "amber"
+                      : "blue"
+                }
+              >
                 {provider.priceModel}
               </Badge>
             </div>
@@ -51,8 +56,8 @@ export function ProviderCard({ provider, index = 0 }: ProviderCardProps) {
                   ? `${(provider.totalMaterials / 1_000_000).toFixed(1)}M`
                   : provider.totalMaterials >= 1_000
                     ? `${(provider.totalMaterials / 1_000).toFixed(1)}K`
-                    : provider.totalMaterials
-              } materi
+                    : provider.totalMaterials}{" "}
+                materi
               </span>
               <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
               <Star className="h-3.5 w-3.5 text-amber fill-amber" />
@@ -61,7 +66,10 @@ export function ProviderCard({ provider, index = 0 }: ProviderCardProps) {
 
             <div className="flex flex-wrap gap-1.5">
               {provider.formats.slice(0, 3).map((fmt) => (
-                <span key={fmt} className="text-xs bg-muted px-2 py-0.5 rounded-md text-muted-foreground">
+                <span
+                  key={fmt}
+                  className="text-xs bg-muted px-2 py-0.5 rounded-md text-muted-foreground"
+                >
                   {fmt}
                 </span>
               ))}

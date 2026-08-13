@@ -1,26 +1,26 @@
-import { Resend } from 'resend';
-import { logger } from './logger';
+import { Resend } from "resend";
+import { logger } from "./logger";
 
 let resendClient: Resend | undefined;
 
 function getResend(): Resend {
   if (!resendClient) {
     if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not defined in environment variables');
+      throw new Error("RESEND_API_KEY is not defined in environment variables");
     }
     resendClient = new Resend(process.env.RESEND_API_KEY);
   }
   return resendClient;
 }
 
-const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@lecturerouter.com';
-const APP_NAME = 'LectureRouter';
+const FROM_EMAIL = process.env.EMAIL_FROM || "noreply@lecturerouter.com";
+const APP_NAME = "LectureRouter";
 
 // Email verification
 export async function sendVerificationEmail(
   to: string,
   firstName: string,
-  verificationUrl: string
+  verificationUrl: string,
 ): Promise<void> {
   try {
     await getResend().emails.send({
@@ -71,9 +71,9 @@ export async function sendVerificationEmail(
       `,
     });
 
-    logger.info('Verification email sent', { to, firstName });
+    logger.info("Verification email sent", { to, firstName });
   } catch (error) {
-    logger.error('Failed to send verification email', error, { to });
+    logger.error("Failed to send verification email", error, { to });
     throw error;
   }
 }
@@ -82,7 +82,7 @@ export async function sendVerificationEmail(
 export async function sendPasswordResetEmail(
   to: string,
   firstName: string,
-  resetUrl: string
+  resetUrl: string,
 ): Promise<void> {
   try {
     await getResend().emails.send({
@@ -137,15 +137,18 @@ export async function sendPasswordResetEmail(
       `,
     });
 
-    logger.info('Password reset email sent', { to, firstName });
+    logger.info("Password reset email sent", { to, firstName });
   } catch (error) {
-    logger.error('Failed to send password reset email', error, { to });
+    logger.error("Failed to send password reset email", error, { to });
     throw error;
   }
 }
 
 // Welcome email
-export async function sendWelcomeEmail(to: string, firstName: string): Promise<void> {
+export async function sendWelcomeEmail(
+  to: string,
+  firstName: string,
+): Promise<void> {
   try {
     await getResend().emails.send({
       from: FROM_EMAIL,
@@ -200,9 +203,9 @@ export async function sendWelcomeEmail(to: string, firstName: string): Promise<v
       `,
     });
 
-    logger.info('Welcome email sent', { to, firstName });
+    logger.info("Welcome email sent", { to, firstName });
   } catch (error) {
-    logger.error('Failed to send welcome email', error, { to });
+    logger.error("Failed to send welcome email", error, { to });
     // Don't throw - welcome email is not critical
   }
 }
@@ -212,7 +215,7 @@ export async function sendSubscriptionEmail(
   to: string,
   firstName: string,
   plan: string,
-  action: 'activated' | 'upgraded' | 'downgraded' | 'cancelled'
+  action: "activated" | "upgraded" | "downgraded" | "cancelled",
 ): Promise<void> {
   const actionMessages = {
     activated: `Your ${plan} subscription has been activated!`,
@@ -269,9 +272,9 @@ export async function sendSubscriptionEmail(
       `,
     });
 
-    logger.info('Subscription email sent', { to, firstName, plan, action });
+    logger.info("Subscription email sent", { to, firstName, plan, action });
   } catch (error) {
-    logger.error('Failed to send subscription email', error, { to });
+    logger.error("Failed to send subscription email", error, { to });
   }
 }
 
@@ -280,7 +283,7 @@ export async function sendNotificationEmail(
   to: string,
   firstName: string,
   subject: string,
-  message: string
+  message: string,
 ): Promise<void> {
   try {
     await getResend().emails.send({
@@ -324,8 +327,8 @@ export async function sendNotificationEmail(
       `,
     });
 
-    logger.info('Notification email sent', { to, subject });
+    logger.info("Notification email sent", { to, subject });
   } catch (error) {
-    logger.error('Failed to send notification email', error, { to });
+    logger.error("Failed to send notification email", error, { to });
   }
 }

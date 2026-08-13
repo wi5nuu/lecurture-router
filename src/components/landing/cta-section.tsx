@@ -34,13 +34,16 @@ export function CTASection() {
             </h2>
 
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-              Bergabung dengan 50.000+ mahasiswa dan akademisi. Akses materi dari 
-              mana saja, kapan saja, tanpa batas.
+              Bergabung dengan 50.000+ mahasiswa dan akademisi. Akses materi
+              dari mana saja, kapan saja, tanpa batas.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/register">
-                <Button size="xl" className="bg-blue hover:bg-blue-dark shadow-lg shadow-blue/25 text-base gap-2">
+                <Button
+                  size="xl"
+                  className="bg-blue hover:bg-blue-dark shadow-lg shadow-blue/25 text-base gap-2"
+                >
                   Mulai Gratis Sekarang
                   <ArrowRight className="h-5 w-5" />
                 </Button>

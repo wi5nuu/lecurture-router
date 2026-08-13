@@ -2,7 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
-import { AnimatedSection, AnimatedStagger, AnimatedItem } from "@/components/shared/animated-section";
+import {
+  AnimatedSection,
+  AnimatedStagger,
+  AnimatedItem,
+} from "@/components/shared/animated-section";
 import { testimonials } from "@/lib/data";
 
 export function Testimonials() {
@@ -14,7 +18,8 @@ export function Testimonials() {
             Apa Kata Mereka?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Bergabung dengan puluhan ribu mahasiswa dan akademisi yang sudah merasakan manfaatnya
+            Bergabung dengan puluhan ribu mahasiswa dan akademisi yang sudah
+            merasakan manfaatnya
           </p>
         </AnimatedSection>
 
@@ -32,7 +37,9 @@ export function Testimonials() {
                   </div>
                   <div>
                     <p className="font-semibold text-sm">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.university}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t.university}
+                    </p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">

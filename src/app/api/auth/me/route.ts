@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: {
@@ -24,8 +23,8 @@ export async function GET(request: NextRequest) {
         firstName: true,
         lastName: true,
         status: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     if (!user) {
@@ -34,6 +33,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

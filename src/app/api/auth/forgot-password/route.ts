@@ -9,10 +9,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email wajib diisi" }, { status: 400 });
     }
 
-    
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true }
+      select: { id: true },
     });
 
     return NextResponse.json({
@@ -21,6 +20,9 @@ export async function POST(request: NextRequest) {
         : "Jika email terdaftar, link reset password akan dikirim",
     });
   } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

@@ -5,6 +5,7 @@ Platform agregator materi kuliah dari seluruh dunia dengan fitur realtime, subsc
 ## 🚀 Tech Stack
 
 ### Core
+
 - **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript
 - **Database:** PostgreSQL with Prisma ORM (users, auth, subscriptions, bookmarks)
@@ -14,6 +15,7 @@ Platform agregator materi kuliah dari seluruh dunia dengan fitur realtime, subsc
 - **Realtime:** Socket.IO (WebSocket)
 
 ### Infrastructure
+
 - **Payment:** Stripe
 - **Email:** Resend
 - **Error Tracking:** Sentry
@@ -21,6 +23,7 @@ Platform agregator materi kuliah dari seluruh dunia dengan fitur realtime, subsc
 - **Testing:** Vitest + Playwright
 
 ### Features
+
 - ✅ JWT Authentication with refresh tokens
 - ✅ Email verification
 - ✅ Password reset
@@ -65,6 +68,7 @@ cp .env.example .env
 \`\`\`
 
 Update the following critical variables:
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `REDIS_URL`: Redis connection string
 - `JWT_SECRET` & `JWT_REFRESH_SECRET`: Strong random strings
@@ -101,25 +105,32 @@ npm run firebase:seed
 ### 3. Database Setup
 
 \`\`\`bash
+
 # Generate Prisma Client
+
 npm run prisma:generate
 
 # Run migrations
+
 npm run prisma:migrate
 
 # Seed database (optional)
+
 npm run prisma:seed
 \`\`\`
 
 ### 4. Start Development Servers
 
 \`\`\`bash
+
 # Start all services (Next.js + WebSocket)
+
 npm run dev:all
 
 # Or start separately:
-npm run dev          # Next.js app
-npm run dev:ws       # WebSocket server
+
+npm run dev # Next.js app
+npm run dev:ws # WebSocket server
 \`\`\`
 
 ## 🐳 Docker Deployment
@@ -139,19 +150,24 @@ docker-compose -f docker-compose.prod.yml up -d
 ## 🧪 Testing
 
 \`\`\`bash
+
 # Unit tests
+
 npm test
 
 # Unit tests with UI
+
 npm run test:ui
 
 # E2E tests
+
 npm run test:e2e
 \`\`\`
 
 ## 📊 Data Architecture
 
 ### PostgreSQL (Prisma) - User & business data
+
 - **User**: User accounts with role-based permissions
 - **Subscription**: User subscriptions with Stripe integration
 - **Bookmark**: User bookmarks
@@ -163,6 +179,7 @@ npm run test:e2e
 - **UsageMetric**: Usage tracking
 
 ### Firebase Firestore - Catalog (text-only)
+
 - **materials**: Educational materials (title, description, tags, URL, full content)
 - **providers**: Content providers
 - **categories**: Material categories
@@ -193,18 +210,18 @@ GET /api/auth/verify-email?token=xxx
 
 \`\`\`typescript
 Headers: {
-  'X-API-Key': 'your-api-key'
+'X-API-Key': 'your-api-key'
 }
 \`\`\`
 
 ## 💳 Subscription Plans
 
-| Plan | Price | Features |
-|------|-------|----------|
-| **FREE** | $0 | 1,000 materials, 5 bookmarks, Basic search |
-| **BASIC** | $9.99/mo | 10,000 materials, Unlimited bookmarks, Advanced search |
-| **PRO** | $29.99/mo | All materials, AI search, API access, Real-time updates |
-| **ENTERPRISE** | $99.99/mo | Everything + Custom integrations, SLA, Analytics |
+| Plan           | Price     | Features                                                |
+| -------------- | --------- | ------------------------------------------------------- |
+| **FREE**       | $0        | 1,000 materials, 5 bookmarks, Basic search              |
+| **BASIC**      | $9.99/mo  | 10,000 materials, Unlimited bookmarks, Advanced search  |
+| **PRO**        | $29.99/mo | All materials, AI search, API access, Real-time updates |
+| **ENTERPRISE** | $99.99/mo | Everything + Custom integrations, SLA, Analytics        |
 
 ### Subscription API
 
@@ -234,12 +251,14 @@ GET /api/search/suggestions?q=mac
 ## 🔌 WebSocket Events
 
 ### Client → Server
+
 - \`subscribe\`: Subscribe to channel
 - \`unsubscribe\`: Unsubscribe from channel
 - \`notification:read\`: Mark notification as read
 - \`ping\`: Health check
 
 ### Server → Client
+
 - \`connected\`: Connection established
 - \`notification\`: New notification
 - \`material:update\`: Material updated
@@ -249,11 +268,13 @@ GET /api/search/suggestions?q=mac
 ## 👨‍💼 Admin API
 
 ### Statistics
+
 \`\`\`typescript
 GET /api/admin/stats?days=30
 \`\`\`
 
 ### User Management
+
 \`\`\`typescript
 // List users
 GET /api/admin/users?page=1&limit=20&search=john
@@ -292,18 +313,19 @@ vercel deploy --prod
 ### Manual Deployment
 
 1. Build the application:
-\`\`\`bash
-npm run build
-\`\`\`
+   \`\`\`bash
+   npm run build
+   \`\`\`
 
 2. Start production server:
-\`\`\`bash
-npm start
-\`\`\`
+   \`\`\`bash
+   npm start
+   \`\`\`
 
 ### Environment Variables for Production
 
 Ensure all environment variables are set in your hosting platform:
+
 - Database credentials
 - Redis URL
 - Stripe keys

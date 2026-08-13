@@ -1,14 +1,14 @@
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 export enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
+  DEBUG = "debug",
+  INFO = "info",
+  WARN = "warn",
+  ERROR = "error",
 }
 
 interface LogContext {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class Logger {
@@ -16,18 +16,28 @@ class Logger {
   private logLevel: LogLevel;
 
   constructor() {
-    this.enableSentry = process.env.SENTRY_DSN !== undefined && process.env.SENTRY_DSN !== '';
+    this.enableSentry =
+      process.env.SENTRY_DSN !== undefined && process.env.SENTRY_DSN !== "";
     this.logLevel = (process.env.LOG_LEVEL as LogLevel) || LogLevel.INFO;
   }
 
   private shouldLog(level: LogLevel): boolean {
-    const levels = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR];
+    const levels = [
+      LogLevel.DEBUG,
+      LogLevel.INFO,
+      LogLevel.WARN,
+      LogLevel.ERROR,
+    ];
     return levels.indexOf(level) >= levels.indexOf(this.logLevel);
   }
 
-  private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+  ): string {
     const timestamp = new Date().toISOString();
-    const contextStr = context ? ` ${JSON.stringify(context)}` : '';
+    const contextStr = context ? ` ${JSON.stringify(context)}` : "";
     return `[${timestamp}] [${level.toUpperCase()}] ${message}${contextStr}`;
   }
 
@@ -39,10 +49,10 @@ class Logger {
   info(message: string, context?: LogContext): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
     console.info(this.formatMessage(LogLevel.INFO, message, context));
-    
+
     if (this.enableSentry) {
       Sentry.captureMessage(message, {
-        level: 'info',
+        level: "info",
         contexts: { custom: context || {} },
       });
     }
@@ -51,10 +61,10 @@ class Logger {
   warn(message: string, context?: LogContext): void {
     if (!this.shouldLog(LogLevel.WARN)) return;
     console.warn(this.formatMessage(LogLevel.WARN, message, context));
-    
+
     if (this.enableSentry) {
       Sentry.captureMessage(message, {
-        level: 'warning',
+        level: "warning",
         contexts: { custom: context || {} },
       });
     }
@@ -62,10 +72,13 @@ class Logger {
 
   error(message: string, error?: Error | unknown, context?: LogContext): void {
     if (!this.shouldLog(LogLevel.ERROR)) return;
-    
+
     const errorObj = error instanceof Error ? error : new Error(String(error));
-    console.error(this.formatMessage(LogLevel.ERROR, message, context), errorObj);
-    
+    console.error(
+      this.formatMessage(LogLevel.ERROR, message, context),
+      errorObj,
+    );
+
     if (this.enableSentry) {
       Sentry.captureException(errorObj, {
         contexts: { custom: { message, ...context } },
@@ -98,15 +111,19 @@ class Logger {
         message,
         category,
         data,
-        level: 'info',
+        level: "info",
       });
     }
   }
 
   // Performance monitoring
-  startTransaction(name: string, operation: string): any {
+  startTransaction(name: string, operation: string): unknown {
     if (this.enableSentry) {
-      return (Sentry as any).startTransaction({
+      return (
+        Sentry as unknown as {
+          startTransaction: (opts: { name: string; op: string }) => unknown;
+        }
+      ).startTransaction({
         name,
         op: operation,
       });
@@ -123,7 +140,7 @@ export function createErrorResponse(
   message: string,
   statusCode: number = 500,
   error?: Error | unknown,
-  context?: LogContext
+  context?: LogContext,
 ) {
   logger.error(message, error, context);
 
@@ -132,7 +149,7 @@ export function createErrorResponse(
     message,
     statusCode,
     timestamp: new Date().toISOString(),
-    ...(process.env.NODE_ENV === 'development' && error instanceof Error
+    ...(process.env.NODE_ENV === "development" && error instanceof Error
       ? { stack: error.stack, details: error.message }
       : {}),
   };

@@ -34,8 +34,7 @@ export function Hero() {
             <span className="bg-gradient-to-r from-blue via-blue to-violet bg-clip-text text-transparent">
               Satu Akses
             </span>{" "}
-            untuk Semua{" "}
-            <br className="hidden sm:block" />
+            untuk Semua <br className="hidden sm:block" />
             Materi Kuliah
           </motion.h1>
 
@@ -46,8 +45,11 @@ export function Hero() {
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
           >
             Akses instan ke{" "}
-            <span className="text-foreground font-semibold">jutaan materi</span> dari{" "}
-            <span className="text-foreground font-semibold">ribuan universitas & platform</span>{" "}
+            <span className="text-foreground font-semibold">jutaan materi</span>{" "}
+            dari{" "}
+            <span className="text-foreground font-semibold">
+              ribuan universitas & platform
+            </span>{" "}
             terbaik dunia. Tanpa perlu subscribe satu-satu.
           </motion.p>
 
@@ -67,7 +69,10 @@ export function Hero() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/register">
-              <Button size="xl" className="bg-blue hover:bg-blue-dark shadow-lg shadow-blue/25 text-base gap-2">
+              <Button
+                size="xl"
+                className="bg-blue hover:bg-blue-dark shadow-lg shadow-blue/25 text-base gap-2"
+              >
                 Mulai Gratis
                 <ArrowRight className="h-5 w-5" />
               </Button>
@@ -86,17 +91,23 @@ export function Hero() {
             className="mt-12 flex items-center justify-center gap-8 sm:gap-12 text-xs text-muted-foreground"
           >
             <div className="text-center">
-              <p className="text-2xl font-bold text-foreground font-mono">650M+</p>
+              <p className="text-2xl font-bold text-foreground font-mono">
+                650M+
+              </p>
               <p>Materi Terindeks</p>
             </div>
             <div className="w-px h-12 bg-border" />
             <div className="text-center">
-              <p className="text-2xl font-bold text-foreground font-mono">12K+</p>
+              <p className="text-2xl font-bold text-foreground font-mono">
+                12K+
+              </p>
               <p>Provider</p>
             </div>
             <div className="w-px h-12 bg-border" />
             <div className="text-center">
-              <p className="text-2xl font-bold text-foreground font-mono">50K+</p>
+              <p className="text-2xl font-bold text-foreground font-mono">
+                50K+
+              </p>
               <p>Mahasiswa Aktif</p>
             </div>
           </motion.div>

@@ -5,28 +5,45 @@ import { Header } from "@/components/layout/header";
 import { MaterialCard } from "@/components/shared/material-card";
 import { Button } from "@/components/ui/button";
 import {
-  BookOpen, Filter, SlidersHorizontal, Grid3X3, List,
-  X, GraduationCap, FlaskConical, Monitor,
-  Settings, HeartPulse, TrendingUp, Scale, Users,
-  BookOpen as BookOpenIcon, Palette, Sprout, Compass,
-  Search, Menu, Loader2, RefreshCw,
+  BookOpen,
+  Filter,
+  SlidersHorizontal,
+  Grid3X3,
+  List,
+  X,
+  GraduationCap,
+  FlaskConical,
+  Monitor,
+  Settings,
+  HeartPulse,
+  TrendingUp,
+  Scale,
+  Users,
+  BookOpen as BookOpenIcon,
+  Palette,
+  Sprout,
+  Compass,
+  Search,
+  Menu,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { type Material, type Category } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, React.ReactNode> = {
-  "settings": <Settings className="h-4 w-4" />,
+  settings: <Settings className="h-4 w-4" />,
   "heart-pulse": <HeartPulse className="h-4 w-4" />,
   "trending-up": <TrendingUp className="h-4 w-4" />,
-  "scale": <Scale className="h-4 w-4" />,
+  scale: <Scale className="h-4 w-4" />,
   "flask-conical": <FlaskConical className="h-4 w-4" />,
-  "users": <Users className="h-4 w-4" />,
+  users: <Users className="h-4 w-4" />,
   "book-open": <BookOpenIcon className="h-4 w-4" />,
-  "monitor": <Monitor className="h-4 w-4" />,
+  monitor: <Monitor className="h-4 w-4" />,
   "graduation-cap": <GraduationCap className="h-4 w-4" />,
-  "palette": <Palette className="h-4 w-4" />,
-  "sprout": <Sprout className="h-4 w-4" />,
-  "compass": <Compass className="h-4 w-4" />,
+  palette: <Palette className="h-4 w-4" />,
+  sprout: <Sprout className="h-4 w-4" />,
+  compass: <Compass className="h-4 w-4" />,
 };
 
 const formats = ["Semua", "PDF", "Video", "Slide", "E-Book"];
@@ -132,7 +149,7 @@ async function fetchCatalog(): Promise<{
           materialCount: c.materialCount ?? 0,
           description: c.description,
           color: c.color,
-        }) satisfies Category
+        }) satisfies Category,
     ),
   };
 }
@@ -164,7 +181,7 @@ export function DashboardClient() {
         setCategories(data.categories);
       } catch (error) {
         setLoadError(
-          error instanceof Error ? error.message : "Terjadi kesalahan"
+          error instanceof Error ? error.message : "Terjadi kesalahan",
         );
       } finally {
         setLoading(false);
@@ -184,7 +201,7 @@ export function DashboardClient() {
       } catch (error) {
         if (!cancelled) {
           setLoadError(
-            error instanceof Error ? error.message : "Terjadi kesalahan"
+            error instanceof Error ? error.message : "Terjadi kesalahan",
           );
         }
       } finally {
@@ -251,7 +268,7 @@ export function DashboardClient() {
             "fixed inset-y-0 left-0 z-40 w-64 pt-16",
             mobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
             "md:relative md:inset-auto md:z-auto md:block md:translate-x-0 md:pt-0",
-            sidebarOpen ? "md:w-64" : "md:w-0 md:overflow-hidden md:border-r-0"
+            sidebarOpen ? "md:w-64" : "md:w-0 md:overflow-hidden md:border-r-0",
           )}
         >
           <div className="p-4">
@@ -259,34 +276,50 @@ export function DashboardClient() {
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Kategori
               </h3>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setSidebarOpen(false); setMobileSidebarOpen(false); }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => {
+                  setSidebarOpen(false);
+                  setMobileSidebarOpen(false);
+                }}
+              >
                 <X className="h-3 w-3" />
               </Button>
             </div>
             <div className="space-y-1">
               <button
-                onClick={() => { setSelectedCategory(null); setMobileSidebarOpen(false); }}
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setMobileSidebarOpen(false);
+                }}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
                   !selectedCategory
                     ? "bg-blue/10 text-blue font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
                 )}
               >
                 <BookOpen className="h-4 w-4" />
                 Semua Kategori
-                <span className="ml-auto text-xs font-mono text-muted-foreground">{materials.length}</span>
+                <span className="ml-auto text-xs font-mono text-muted-foreground">
+                  {materials.length}
+                </span>
               </button>
               <div className="h-px bg-border/50 my-2" />
               {categories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => { setSelectedCategory(cat.id); setMobileSidebarOpen(false); }}
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setMobileSidebarOpen(false);
+                  }}
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
                     selectedCategory === cat.id
                       ? "bg-blue/10 text-blue font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent",
                   )}
                 >
                   {iconMap[cat.icon]}
@@ -342,7 +375,11 @@ export function DashboardClient() {
 
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-muted-foreground">
-                  Menampilkan <span className="font-semibold text-foreground">{filtered.length}</span> materi
+                  Menampilkan{" "}
+                  <span className="font-semibold text-foreground">
+                    {filtered.length}
+                  </span>{" "}
+                  materi
                 </p>
                 <div className="flex items-center gap-1">
                   <div className="relative">
@@ -350,28 +387,47 @@ export function DashboardClient() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setFilterOpen(!filterOpen)}
-                      className={cn("h-8 w-8", filterOpen && "text-blue bg-blue/10")}
+                      className={cn(
+                        "h-8 w-8",
+                        filterOpen && "text-blue bg-blue/10",
+                      )}
                     >
                       <Filter className="h-4 w-4" />
-                      {(selectedFormat !== "Semua" || selectedLevel !== "Semua" || selectedPrice !== "Semua") && (
+                      {(selectedFormat !== "Semua" ||
+                        selectedLevel !== "Semua" ||
+                        selectedPrice !== "Semua") && (
                         <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue text-[8px] font-bold text-white">
-                          {(selectedFormat !== "Semua" ? 1 : 0) + (selectedLevel !== "Semua" ? 1 : 0) + (selectedPrice !== "Semua" ? 1 : 0)}
+                          {(selectedFormat !== "Semua" ? 1 : 0) +
+                            (selectedLevel !== "Semua" ? 1 : 0) +
+                            (selectedPrice !== "Semua" ? 1 : 0)}
                         </span>
                       )}
                     </Button>
                     {filterOpen && (
                       <>
-                        <div className="fixed inset-0 z-10" onClick={() => setFilterOpen(false)} />
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setFilterOpen(false)}
+                        />
                         <div className="absolute right-0 top-full mt-2 z-20 w-72 rounded-xl border border-border bg-card shadow-xl p-4 space-y-4">
                           <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Filter</p>
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                              Filter
+                            </p>
                             {hasActiveFilters && (
-                              <button onClick={clearFilters} className="text-xs text-blue hover:underline">Reset</button>
+                              <button
+                                onClick={clearFilters}
+                                className="text-xs text-blue hover:underline"
+                              >
+                                Reset
+                              </button>
                             )}
                           </div>
                           <div className="h-px bg-border/50" />
                           <div>
-                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Format</p>
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                              Format
+                            </p>
                             <div className="flex flex-wrap gap-1.5">
                               {formats.map((fmt) => (
                                 <button
@@ -381,7 +437,7 @@ export function DashboardClient() {
                                     "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
                                     selectedFormat === fmt
                                       ? "bg-blue/10 text-blue border border-blue/20"
-                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent",
                                   )}
                                 >
                                   {fmt}
@@ -391,7 +447,9 @@ export function DashboardClient() {
                           </div>
                           <div className="h-px bg-border/50" />
                           <div>
-                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Level</p>
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                              Level
+                            </p>
                             <div className="flex flex-wrap gap-1.5">
                               {levels.map((lv) => (
                                 <button
@@ -401,7 +459,7 @@ export function DashboardClient() {
                                     "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
                                     selectedLevel === lv
                                       ? "bg-blue/10 text-blue border border-blue/20"
-                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent",
                                   )}
                                 >
                                   {lv}
@@ -411,7 +469,9 @@ export function DashboardClient() {
                           </div>
                           <div className="h-px bg-border/50" />
                           <div>
-                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Harga</p>
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                              Harga
+                            </p>
                             <div className="flex flex-wrap gap-1.5">
                               {prices.map((pr) => (
                                 <button
@@ -421,7 +481,7 @@ export function DashboardClient() {
                                     "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
                                     selectedPrice === pr
                                       ? "bg-blue/10 text-blue border border-blue/20"
-                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent",
                                   )}
                                 >
                                   {pr}
@@ -436,7 +496,10 @@ export function DashboardClient() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={cn("h-8 w-8", viewMode === "grid" && "text-blue bg-blue/10")}
+                    className={cn(
+                      "h-8 w-8",
+                      viewMode === "grid" && "text-blue bg-blue/10",
+                    )}
                     onClick={() => setViewMode("grid")}
                   >
                     <Grid3X3 className="h-4 w-4" />
@@ -444,7 +507,10 @@ export function DashboardClient() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={cn("h-8 w-8", viewMode === "list" && "text-blue bg-blue/10")}
+                    className={cn(
+                      "h-8 w-8",
+                      viewMode === "list" && "text-blue bg-blue/10",
+                    )}
                     onClick={() => setViewMode("list")}
                   >
                     <List className="h-4 w-4" />
@@ -452,11 +518,13 @@ export function DashboardClient() {
                 </div>
               </div>
 
-              <div className={cn(
-                viewMode === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                  : "flex flex-col gap-3"
-              )}>
+              <div
+                className={cn(
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    : "flex flex-col gap-3",
+                )}
+              >
                 {loading && (
                   <div className="col-span-full flex flex-col items-center justify-center py-20">
                     <Loader2 className="h-8 w-8 text-blue animate-spin mb-3" />
@@ -469,23 +537,39 @@ export function DashboardClient() {
                 {!loading && loadError && (
                   <div className="col-span-full text-center py-20">
                     <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Gagal memuat materi</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{loadError}</p>
-                    <Button variant="outline" className="gap-2" onClick={handleRetry}>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Gagal memuat materi
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {loadError}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={handleRetry}
+                    >
                       <RefreshCw className="h-4 w-4" /> Coba Lagi
                     </Button>
                   </div>
                 )}
 
-                {!loading && !loadError && displayed.map((material, i) => (
-                  <MaterialCard key={material.id} material={material} index={i} />
-                ))}
+                {!loading &&
+                  !loadError &&
+                  displayed.map((material, i) => (
+                    <MaterialCard
+                      key={material.id}
+                      material={material}
+                      index={i}
+                    />
+                  ))}
               </div>
 
               {!loading && !loadError && filtered.length === 0 && (
                 <div className="text-center py-20">
                   <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Tidak ada materi ditemukan</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Tidak ada materi ditemukan
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Coba ubah filter atau kata kunci pencarian Anda
                   </p>

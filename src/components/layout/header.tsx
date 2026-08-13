@@ -23,7 +23,13 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="relative h-9 w-9 overflow-hidden rounded-lg">
-            <Image src="/android-chrome-192x192.png" alt="LectureRouter" width={36} height={36} className="object-cover" />
+            <Image
+              src="/android-chrome-192x192.png"
+              alt="LectureRouter"
+              width={36}
+              height={36}
+              className="object-cover"
+            />
           </div>
           <span className="text-lg font-bold tracking-tight">
             Lecture<span className="text-blue">Router</span>
@@ -49,7 +55,10 @@ export function Header() {
             </Button>
           </Link>
           <Link href="/register">
-            <Button size="sm" className="hidden sm:inline-flex bg-blue hover:bg-blue-dark">
+            <Button
+              size="sm"
+              className="hidden sm:inline-flex bg-blue hover:bg-blue-dark"
+            >
               Daftar Gratis
             </Button>
           </Link>
@@ -60,7 +69,11 @@ export function Header() {
             className="md:hidden h-9 w-9"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>
@@ -68,7 +81,7 @@ export function Header() {
       <div
         className={cn(
           "md:hidden border-t border-border/50 overflow-hidden transition-all duration-300",
-          mobileOpen ? "max-h-96" : "max-h-0"
+          mobileOpen ? "max-h-96" : "max-h-0",
         )}
       >
         <div className="px-4 py-4 space-y-2">

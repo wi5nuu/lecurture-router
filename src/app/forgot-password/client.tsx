@@ -5,7 +5,13 @@ import Link from "next/link";
 import { Mail, ArrowLeft, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -37,15 +43,25 @@ export function ForgotPasswordClient() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 group mb-6">
             <div className="relative h-10 w-10 overflow-hidden rounded-xl">
-              <Image src="/android-chrome-192x192.png" alt="LectureRouter" width={40} height={40} className="object-cover" />
+              <Image
+                src="/android-chrome-192x192.png"
+                alt="LectureRouter"
+                width={40}
+                height={40}
+                className="object-cover"
+              />
             </div>
             <span className="text-xl font-bold">
               Lecture<span className="text-blue">Router</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight mb-2">Lupa Password</h1>
+          <h1 className="text-2xl font-bold tracking-tight mb-2">
+            Lupa Password
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {sent ? "Cek email Anda untuk tautan reset password" : "Masukkan email Anda, kami akan kirim tautan reset"}
+            {sent
+              ? "Cek email Anda untuk tautan reset password"
+              : "Masukkan email Anda, kami akan kirim tautan reset"}
           </p>
         </div>
 
@@ -67,11 +83,17 @@ export function ForgotPasswordClient() {
                   </div>
                   {error && <p className="text-xs text-red-500">{error}</p>}
                 </div>
-                <Button className="w-full h-12 bg-blue hover:bg-blue-dark gap-2" onClick={handleSend}>
+                <Button
+                  className="w-full h-12 bg-blue hover:bg-blue-dark gap-2"
+                  onClick={handleSend}
+                >
                   Kirim Tautan Reset <Send className="h-4 w-4" />
                 </Button>
                 <div className="text-center">
-                  <Link href="/login" className="inline-flex items-center gap-1 text-sm text-blue hover:underline">
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center gap-1 text-sm text-blue hover:underline"
+                  >
                     <ArrowLeft className="h-3 w-3" /> Kembali ke Login
                   </Link>
                 </div>
@@ -83,7 +105,8 @@ export function ForgotPasswordClient() {
                 </div>
                 <h3 className="font-semibold mb-2">Email Terkirim!</h3>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Jika email terdaftar, Anda akan menerima tautan reset password dalam beberapa menit.
+                  Jika email terdaftar, Anda akan menerima tautan reset password
+                  dalam beberapa menit.
                 </p>
                 <Link href="/login">
                   <Button variant="outline" className="gap-2">

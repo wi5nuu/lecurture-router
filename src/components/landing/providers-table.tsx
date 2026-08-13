@@ -2,13 +2,13 @@
 
 import { motion } from "framer-motion";
 import { Star, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/shared/animated-section";
 import { providers } from "@/lib/data";
 import Link from "next/link";
 
-const priceColors: Record<string, string> = {
+const priceColors: Record<string, NonNullable<BadgeProps["variant"]>> = {
   Gratis: "blue",
   Freemium: "amber",
   Premium: "blue",
@@ -33,12 +33,24 @@ export function ProvidersTable() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Provider</th>
-                  <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Deskripsi</th>
-                  <th className="text-right p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Jumlah Materi</th>
-                  <th className="text-center p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Format</th>
-                  <th className="text-center p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Harga</th>
-                  <th className="text-center p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rating</th>
+                  <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Provider
+                  </th>
+                  <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">
+                    Deskripsi
+                  </th>
+                  <th className="text-right p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Jumlah Materi
+                  </th>
+                  <th className="text-center p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
+                    Format
+                  </th>
+                  <th className="text-center p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Harga
+                  </th>
+                  <th className="text-center p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Rating
+                  </th>
                   <th className="text-right p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider"></th>
                 </tr>
               </thead>
@@ -58,10 +70,15 @@ export function ProvidersTable() {
                           {provider.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <Link href={`/providers/${provider.id}`} className="text-sm font-semibold hover:text-blue transition-colors">
+                          <Link
+                            href={`/providers/${provider.id}`}
+                            className="text-sm font-semibold hover:text-blue transition-colors"
+                          >
                             {provider.name}
                           </Link>
-                          <p className="text-xs text-muted-foreground hidden lg:block">{provider.headquarters}</p>
+                          <p className="text-xs text-muted-foreground hidden lg:block">
+                            {provider.headquarters}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -80,26 +97,35 @@ export function ProvidersTable() {
                     <td className="p-4 text-center hidden sm:table-cell">
                       <div className="flex flex-wrap justify-center gap-1">
                         {provider.formats.slice(0, 2).map((fmt) => (
-                          <span key={fmt} className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground">
+                          <span
+                            key={fmt}
+                            className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground"
+                          >
                             {fmt}
                           </span>
                         ))}
                       </div>
                     </td>
                     <td className="p-4 text-center">
-                      <Badge variant={priceColors[provider.priceModel] as any}>
+                      <Badge variant={priceColors[provider.priceModel]}>
                         {provider.priceModel}
                       </Badge>
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Star className="h-3.5 w-3.5 text-amber fill-amber" />
-                        <span className="text-sm font-mono font-semibold">{provider.rating}</span>
+                        <span className="text-sm font-mono font-semibold">
+                          {provider.rating}
+                        </span>
                       </div>
                     </td>
                     <td className="p-4 text-right">
                       <Link href={`/providers/${provider.id}`}>
-                        <Button variant="ghost" size="sm" className="text-xs gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs gap-1"
+                        >
                           Detail <ExternalLink className="h-3 w-3" />
                         </Button>
                       </Link>

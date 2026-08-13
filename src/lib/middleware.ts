@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAccessToken, JWTPayload } from './jwt';
-import { rateLimit } from './redis';
-import prisma from './db';
+import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "../generated/prisma";
+import { verifyAccessToken, JWTPayload } from "./jwt";
+import { rateLimit } from "./redis";
+import prisma from "./db";
 
 // Extended NextRequest with user info
 export interface AuthenticatedRequest extends NextRequest {
@@ -11,14 +12,14 @@ export interface AuthenticatedRequest extends NextRequest {
 // Rate limiting middleware
 export async function rateLimitMiddleware(
   request: NextRequest,
-  identifier?: string
+  identifier?: string,
 ): Promise<{ allowed: boolean; response?: NextResponse }> {
-  const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100');
-  const windowMinutes = parseInt(process.env.RATE_LIMIT_WINDOW || '15');
+  const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100");
+  const windowMinutes = parseInt(process.env.RATE_LIMIT_WINDOW || "15");
   const windowSeconds = windowMinutes * 60;
 
   // Use provided identifier or fall back to IP
-  const id = identifier || request.headers.get('x-forwarded-for') || 'unknown';
+  const id = identifier || request.headers.get("x-forwarded-for") || "unknown";
   const key = `rate-limit:${id}`;
 
   const result = await rateLimit.check(key, maxRequests, windowSeconds);
@@ -28,19 +29,21 @@ export async function rateLimitMiddleware(
       allowed: false,
       response: NextResponse.json(
         {
-          error: 'Too many requests',
+          error: "Too many requests",
           message: `Rate limit exceeded. Try again in ${Math.ceil((result.resetAt - Date.now()) / 1000)} seconds`,
           resetAt: result.resetAt,
         },
-        { 
+        {
           status: 429,
           headers: {
-            'X-RateLimit-Limit': maxRequests.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': result.resetAt.toString(),
-            'Retry-After': Math.ceil((result.resetAt - Date.now()) / 1000).toString(),
-          }
-        }
+            "X-RateLimit-Limit": maxRequests.toString(),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": result.resetAt.toString(),
+            "Retry-After": Math.ceil(
+              (result.resetAt - Date.now()) / 1000,
+            ).toString(),
+          },
+        },
       ),
     };
   }
@@ -49,19 +52,22 @@ export async function rateLimitMiddleware(
 }
 
 // Authentication middleware
-export async function authMiddleware(request: NextRequest): Promise<{ 
-  authenticated: boolean; 
-  user?: JWTPayload; 
-  response?: NextResponse 
+export async function authMiddleware(request: NextRequest): Promise<{
+  authenticated: boolean;
+  user?: JWTPayload;
+  response?: NextResponse;
 }> {
-  const authHeader = request.headers.get('authorization');
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const authHeader = request.headers.get("authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return {
       authenticated: false,
       response: NextResponse.json(
-        { error: 'Unauthorized', message: 'Missing or invalid authorization header' },
-        { status: 401 }
+        {
+          error: "Unauthorized",
+          message: "Missing or invalid authorization header",
+        },
+        { status: 401 },
       ),
     };
   }
@@ -73,8 +79,8 @@ export async function authMiddleware(request: NextRequest): Promise<{
     return {
       authenticated: false,
       response: NextResponse.json(
-        { error: 'Unauthorized', message: 'Invalid or expired token' },
-        { status: 401 }
+        { error: "Unauthorized", message: "Invalid or expired token" },
+        { status: 401 },
       ),
     };
   }
@@ -89,8 +95,8 @@ export async function authMiddleware(request: NextRequest): Promise<{
     return {
       authenticated: false,
       response: NextResponse.json(
-        { error: 'Unauthorized', message: 'User not found or inactive' },
-        { status: 401 }
+        { error: "Unauthorized", message: "User not found or inactive" },
+        { status: 401 },
       ),
     };
   }
@@ -100,16 +106,19 @@ export async function authMiddleware(request: NextRequest): Promise<{
 
 // Role-based authorization middleware
 export function requireRole(allowedRoles: string[]) {
-  return async (request: NextRequest, user: JWTPayload): Promise<{ authorized: boolean; response?: NextResponse }> => {
+  return async (
+    request: NextRequest,
+    user: JWTPayload,
+  ): Promise<{ authorized: boolean; response?: NextResponse }> => {
     if (!allowedRoles.includes(user.role)) {
       return {
         authorized: false,
         response: NextResponse.json(
-          { 
-            error: 'Forbidden', 
-            message: `This endpoint requires one of the following roles: ${allowedRoles.join(', ')}` 
+          {
+            error: "Forbidden",
+            message: `This endpoint requires one of the following roles: ${allowedRoles.join(", ")}`,
           },
-          { status: 403 }
+          { status: 403 },
         ),
       };
     }
@@ -124,14 +133,14 @@ export async function apiKeyMiddleware(request: NextRequest): Promise<{
   userId?: string;
   response?: NextResponse;
 }> {
-  const apiKey = request.headers.get('x-api-key');
+  const apiKey = request.headers.get("x-api-key");
 
   if (!apiKey) {
     return {
       authenticated: false,
       response: NextResponse.json(
-        { error: 'Unauthorized', message: 'Missing API key' },
-        { status: 401 }
+        { error: "Unauthorized", message: "Missing API key" },
+        { status: 401 },
       ),
     };
   }
@@ -145,8 +154,8 @@ export async function apiKeyMiddleware(request: NextRequest): Promise<{
     return {
       authenticated: false,
       response: NextResponse.json(
-        { error: 'Unauthorized', message: 'Invalid or inactive API key' },
-        { status: 401 }
+        { error: "Unauthorized", message: "Invalid or inactive API key" },
+        { status: 401 },
       ),
     };
   }
@@ -162,19 +171,19 @@ export async function apiKeyMiddleware(request: NextRequest): Promise<{
 
 // Security headers middleware
 export function addSecurityHeaders(response: NextResponse): NextResponse {
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set(
-    'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=()'
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()",
   );
-  
-  if (process.env.NODE_ENV === 'production') {
+
+  if (process.env.NODE_ENV === "production") {
     response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains'
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains",
     );
   }
 
@@ -182,20 +191,26 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
 }
 
 // CORS middleware
-export function corsMiddleware(request: NextRequest, response: NextResponse): NextResponse {
-  const origin = request.headers.get('origin');
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+export function corsMiddleware(
+  request: NextRequest,
+  response: NextResponse,
+): NextResponse {
+  const origin = request.headers.get("origin");
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
 
-  if (origin && (allowedOrigins.includes(origin) || allowedOrigins.includes('*'))) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
+  if (
+    origin &&
+    (allowedOrigins.includes(origin) || allowedOrigins.includes("*"))
+  ) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
     response.headers.set(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, PATCH, OPTIONS",
     );
     response.headers.set(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-API-Key'
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-API-Key",
     );
   }
 
@@ -209,7 +224,7 @@ export async function auditLog(
   resource: string,
   resourceId: string | undefined,
   request: NextRequest,
-  metadata?: any
+  metadata?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput,
 ): Promise<void> {
   try {
     await prisma.auditLog.create({
@@ -218,20 +233,20 @@ export async function auditLog(
         action,
         resource,
         resourceId: resourceId || null,
-        ipAddress: request.headers.get('x-forwarded-for') || null,
-        userAgent: request.headers.get('user-agent') || null,
-        metadata: metadata || null,
+        ipAddress: request.headers.get("x-forwarded-for") || null,
+        userAgent: request.headers.get("user-agent") || null,
+        metadata: metadata ?? Prisma.JsonNull,
       },
     });
   } catch (error) {
-    console.error('Failed to create audit log:', error);
+    console.error("Failed to create audit log:", error);
   }
 }
 
 // Subscription check middleware
 export async function checkSubscription(
   userId: string,
-  requiredPlan: string[]
+  requiredPlan: string[],
 ): Promise<{ hasAccess: boolean; response?: NextResponse }> {
   const subscription = await prisma.subscription.findUnique({
     where: { userId },
@@ -242,24 +257,25 @@ export async function checkSubscription(
       hasAccess: false,
       response: NextResponse.json(
         {
-          error: 'Subscription Required',
-          message: `This feature requires a ${requiredPlan.join(' or ')} subscription`,
+          error: "Subscription Required",
+          message: `This feature requires a ${requiredPlan.join(" or ")} subscription`,
           requiredPlans: requiredPlan,
         },
-        { status: 403 }
+        { status: 403 },
       ),
     };
   }
 
-  if (subscription.status !== 'ACTIVE' && subscription.status !== 'TRIALING') {
+  if (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING") {
     return {
       hasAccess: false,
       response: NextResponse.json(
         {
-          error: 'Subscription Inactive',
-          message: 'Your subscription is not active. Please update your payment method.',
+          error: "Subscription Inactive",
+          message:
+            "Your subscription is not active. Please update your payment method.",
         },
-        { status: 403 }
+        { status: 403 },
       ),
     };
   }

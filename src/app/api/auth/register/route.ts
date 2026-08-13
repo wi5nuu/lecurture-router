@@ -1,12 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { nanoid } from 'nanoid';
-import prisma from '@/lib/db';
-import { generateTokenPair, generateEmailVerificationToken } from '@/lib/jwt';
-import { validateBody, registerSchema, formatZodErrors } from '@/lib/validation';
-import { rateLimitMiddleware, addSecurityHeaders } from '@/lib/middleware';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
-import { sendVerificationEmail } from '@/lib/email';
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
+import prisma from "@/lib/db";
+import { generateTokenPair, generateEmailVerificationToken } from "@/lib/jwt";
+import {
+  validateBody,
+  registerSchema,
+  formatZodErrors,
+} from "@/lib/validation";
+import { rateLimitMiddleware, addSecurityHeaders } from "@/lib/middleware";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
+import { sendVerificationEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,10 +31,10 @@ export async function POST(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json(
         {
-          error: 'Validation failed',
+          error: "Validation failed",
           errors: formatZodErrors(validation.errors),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,8 +47,8 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'Email sudah terdaftar' },
-        { status: 409 }
+        { error: "Email sudah terdaftar" },
+        { status: 409 },
       );
     }
 
@@ -57,12 +65,12 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         firstName,
         lastName,
-        status: status || 'Mahasiswa S1',
+        status: status || "Mahasiswa S1",
         verificationToken,
         subscription: {
           create: {
-            plan: 'FREE',
-            status: 'ACTIVE',
+            plan: "FREE",
+            status: "ACTIVE",
           },
         },
       },
@@ -98,11 +106,18 @@ export async function POST(request: NextRequest) {
 
     // Send verification email (non-blocking)
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}`;
-    sendVerificationEmail(user.email, user.firstName, verificationUrl).catch((err) => {
-      logger.error('Failed to send verification email', err, { userId: user.id });
-    });
+    sendVerificationEmail(user.email, user.firstName, verificationUrl).catch(
+      (err) => {
+        logger.error("Failed to send verification email", err, {
+          userId: user.id,
+        });
+      },
+    );
 
-    logger.info('User registered successfully', { userId: user.id, email: user.email });
+    logger.info("User registered successfully", {
+      userId: user.id,
+      email: user.email,
+    });
 
     const response = NextResponse.json(
       createSuccessResponse(
@@ -111,17 +126,17 @@ export async function POST(request: NextRequest) {
           refreshToken,
           user,
         },
-        'Registration successful. Please check your email to verify your account.'
+        "Registration successful. Please check your email to verify your account.",
       ),
-      { status: 201 }
+      { status: 201 },
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Registration failed', error);
+    logger.error("Registration failed", error);
     return NextResponse.json(
-      createErrorResponse('Registration failed', 500, error),
-      { status: 500 }
+      createErrorResponse("Registration failed", 500, error),
+      { status: 500 },
     );
   }
 }

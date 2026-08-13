@@ -10,7 +10,7 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 export class FirebaseNotConfiguredError extends Error {
   constructor() {
     super(
-      "Firebase belum dikonfigurasi. Tambahkan FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, dan FIREBASE_PRIVATE_KEY (atau FIREBASE_SERVICE_ACCOUNT) ke environment variables."
+      "Firebase belum dikonfigurasi. Tambahkan FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, dan FIREBASE_PRIVATE_KEY (atau FIREBASE_SERVICE_ACCOUNT) ke environment variables.",
     );
     this.name = "FirebaseNotConfiguredError";
   }
@@ -20,8 +20,8 @@ export function isFirebaseConfigured(): boolean {
   if (process.env.FIREBASE_SERVICE_ACCOUNT) return true;
   return Boolean(
     process.env.FIREBASE_PROJECT_ID &&
-      process.env.FIREBASE_CLIENT_EMAIL &&
-      process.env.FIREBASE_PRIVATE_KEY
+    process.env.FIREBASE_CLIENT_EMAIL &&
+    process.env.FIREBASE_PRIVATE_KEY,
   );
 }
 

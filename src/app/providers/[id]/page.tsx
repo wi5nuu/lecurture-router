@@ -11,7 +11,7 @@ interface Props {
 }
 
 async function fetchProvider(
-  id: string
+  id: string,
 ): Promise<{ provider: Provider; materials: Material[] } | null> {
   if (isFirebaseConfigured()) {
     try {

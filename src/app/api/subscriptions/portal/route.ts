@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { authMiddleware, addSecurityHeaders } from '@/lib/middleware';
-import { createBillingPortalSession } from '@/lib/stripe';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { authMiddleware, addSecurityHeaders } from "@/lib/middleware";
+import { createBillingPortalSession } from "@/lib/stripe";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,8 +23,8 @@ export async function POST(request: NextRequest) {
 
     if (!subscription?.stripeCustomerId) {
       return NextResponse.json(
-        { error: 'No active subscription found' },
-        { status: 404 }
+        { error: "No active subscription found" },
+        { status: 404 },
       );
     }
 
@@ -28,26 +32,30 @@ export async function POST(request: NextRequest) {
     const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
     const session = await createBillingPortalSession(
       subscription.stripeCustomerId,
-      returnUrl
+      returnUrl,
     );
 
-    logger.info('Billing portal session created', { 
+    logger.info("Billing portal session created", {
       userId: authResult.user.userId,
-      sessionId: session.id 
+      sessionId: session.id,
     });
 
     const response = NextResponse.json(
       createSuccessResponse({
         url: session.url,
-      })
+      }),
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Failed to create billing portal session', error);
+    logger.error("Failed to create billing portal session", error);
     return NextResponse.json(
-      createErrorResponse('Failed to create billing portal session', 500, error),
-      { status: 500 }
+      createErrorResponse(
+        "Failed to create billing portal session",
+        500,
+        error,
+      ),
+      { status: 500 },
     );
   }
 }

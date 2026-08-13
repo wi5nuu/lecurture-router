@@ -4,7 +4,11 @@ import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AnimatedSection, AnimatedStagger, AnimatedItem } from "@/components/shared/animated-section";
+import {
+  AnimatedSection,
+  AnimatedStagger,
+  AnimatedItem,
+} from "@/components/shared/animated-section";
 import { pricingTiers } from "@/lib/data";
 import Link from "next/link";
 
@@ -13,12 +17,15 @@ export function PricingSection() {
     <section className="py-20 sm:py-28 bg-muted/20" id="pricing">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection className="text-center mb-16">
-          <Badge variant="blue" className="mb-4 px-3 py-1">Harga</Badge>
+          <Badge variant="blue" className="mb-4 px-3 py-1">
+            Harga
+          </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
             Pilih Paket yang Tepat
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Mulai dari gratis untuk akses dasar, hingga paket lengkap untuk institusi
+            Mulai dari gratis untuk akses dasar, hingga paket lengkap untuk
+            institusi
           </p>
         </AnimatedSection>
 
@@ -35,7 +42,10 @@ export function PricingSection() {
               >
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge variant="blue" className="px-4 py-1 text-xs font-semibold">
+                    <Badge
+                      variant="blue"
+                      className="px-4 py-1 text-xs font-semibold"
+                    >
                       POPULER
                     </Badge>
                   </div>
@@ -49,13 +59,17 @@ export function PricingSection() {
                         <span className="text-4xl font-bold font-mono">
                           {tier.price.toLocaleString()}
                         </span>
-                        <span className="text-sm text-muted-foreground">/ {tier.period}</span>
+                        <span className="text-sm text-muted-foreground">
+                          / {tier.period}
+                        </span>
                       </>
                     ) : (
                       <span className="text-4xl font-bold">Custom</span>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">{tier.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {tier.description}
+                  </p>
                 </div>
 
                 <ul className="space-y-3 mb-8">

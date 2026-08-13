@@ -1,7 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { authMiddleware, addSecurityHeaders } from '@/lib/middleware';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { authMiddleware, addSecurityHeaders } from "@/lib/middleware";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,18 +20,17 @@ export async function POST(request: NextRequest) {
       where: { userId: authResult.user.userId },
     });
 
-    logger.info('User logged out', { userId: authResult.user.userId });
+    logger.info("User logged out", { userId: authResult.user.userId });
 
     const response = NextResponse.json(
-      createSuccessResponse({}, 'Logged out successfully')
+      createSuccessResponse({}, "Logged out successfully"),
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Logout failed', error);
-    return NextResponse.json(
-      createErrorResponse('Logout failed', 500, error),
-      { status: 500 }
-    );
+    logger.error("Logout failed", error);
+    return NextResponse.json(createErrorResponse("Logout failed", 500, error), {
+      status: 500,
+    });
   }
 }

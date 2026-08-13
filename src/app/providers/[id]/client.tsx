@@ -3,9 +3,18 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, ExternalLink, Star, Database,
-  Globe, MapPin, Calendar, Building2, Layers,
-  FileText, Play, BookOpen,
+  ArrowLeft,
+  ExternalLink,
+  Star,
+  Database,
+  Globe,
+  MapPin,
+  Calendar,
+  Building2,
+  Layers,
+  FileText,
+  Play,
+  BookOpen,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,11 +41,15 @@ const formatIcons: Record<string, React.ReactNode> = {
 export function ProviderDetailClient({ provider, materials }: Props) {
   const formatStats = provider.formats.map((fmt) => ({
     format: fmt,
-    count: materials.filter((m) => m.format === fmt).length || Math.floor(Math.random() * 100) + 10,
+    count:
+      materials.filter((m) => m.format === fmt).length ||
+      (fmt.length * 17 + 10) % 90,
   }));
   const langStats = provider.languages.slice(0, 5).map((lang) => ({
     language: lang,
-    count: materials.filter((m) => m.language === lang).length || Math.floor(Math.random() * 50) + 5,
+    count:
+      materials.filter((m) => m.language === lang).length ||
+      (lang.length * 7 + 5) % 45,
   }));
 
   return (
@@ -63,18 +76,27 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-2xl sm:text-3xl font-bold">{provider.name}</h1>
-                      <Badge variant={
-                        provider.priceModel === "Gratis" ? "blue" :
-                        provider.priceModel === "Freemium" ? "amber" : "blue"
-                      }>
+                      <h1 className="text-2xl sm:text-3xl font-bold">
+                        {provider.name}
+                      </h1>
+                      <Badge
+                        variant={
+                          provider.priceModel === "Gratis"
+                            ? "blue"
+                            : provider.priceModel === "Freemium"
+                              ? "amber"
+                              : "blue"
+                        }
+                      >
                         {provider.priceModel}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-amber fill-amber" />
-                        <span className="font-semibold text-foreground">{provider.rating}</span>
+                        <span className="font-semibold text-foreground">
+                          {provider.rating}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Database className="h-4 w-4" />
@@ -103,18 +125,29 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                   ))}
                 </div>
 
-                <a href={provider.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={provider.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Button variant="outline" className="gap-2">
-                    <ExternalLink className="h-4 w-4" /> Kunjungi {provider.name}
+                    <ExternalLink className="h-4 w-4" /> Kunjungi{" "}
+                    {provider.name}
                   </Button>
                 </a>
               </motion.div>
 
               <div>
-                <h3 className="font-semibold text-lg mb-4">Materi dari {provider.name}</h3>
+                <h3 className="font-semibold text-lg mb-4">
+                  Materi dari {provider.name}
+                </h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {materials.slice(0, 6).map((material, i) => (
-                    <MaterialCard key={material.id} material={material} index={i} />
+                    <MaterialCard
+                      key={material.id}
+                      material={material}
+                      index={i}
+                    />
                   ))}
                 </div>
                 {materials.length === 0 && (
@@ -143,24 +176,33 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                       <div className="flex items-start gap-3">
                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Kantor Pusat</p>
+                          <p className="text-muted-foreground text-xs">
+                            Kantor Pusat
+                          </p>
                           <p className="font-medium">{provider.headquarters}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Berdiri Sejak</p>
+                          <p className="text-muted-foreground text-xs">
+                            Berdiri Sejak
+                          </p>
                           <p className="font-medium">{provider.established}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <Globe className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Bahasa</p>
+                          <p className="text-muted-foreground text-xs">
+                            Bahasa
+                          </p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {provider.languages.slice(0, 4).map((lang) => (
-                              <span key={lang} className="text-xs bg-muted px-2 py-0.5 rounded">
+                              <span
+                                key={lang}
+                                className="text-xs bg-muted px-2 py-0.5 rounded"
+                              >
                                 {lang}
                               </span>
                             ))}
@@ -170,10 +212,15 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                       <div className="flex items-start gap-3">
                         <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">Kategori</p>
+                          <p className="text-muted-foreground text-xs">
+                            Kategori
+                          </p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {provider.categories.map((cat) => (
-                              <span key={cat} className="text-xs bg-muted px-2 py-0.5 rounded">
+                              <span
+                                key={cat}
+                                className="text-xs bg-muted px-2 py-0.5 rounded"
+                              >
                                 {cat}
                               </span>
                             ))}
@@ -200,7 +247,9 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
-                            whileInView={{ width: `${Math.min(100, (stat.count / Math.max(...formatStats.map((s) => s.count))) * 100)}%` }}
+                            whileInView={{
+                              width: `${Math.min(100, (stat.count / Math.max(...formatStats.map((s) => s.count))) * 100)}%`,
+                            }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="h-full rounded-full bg-blue"
@@ -227,7 +276,9 @@ export function ProviderDetailClient({ provider, materials }: Props) {
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
-                            whileInView={{ width: `${Math.min(100, (stat.count / Math.max(...langStats.map((s) => s.count))) * 100)}%` }}
+                            whileInView={{
+                              width: `${Math.min(100, (stat.count / Math.max(...langStats.map((s) => s.count))) * 100)}%`,
+                            }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="h-full rounded-full bg-violet"

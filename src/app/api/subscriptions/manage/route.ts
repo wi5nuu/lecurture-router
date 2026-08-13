@@ -1,9 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { authMiddleware, addSecurityHeaders } from '@/lib/middleware';
-import { cancelSubscription, resumeSubscription } from '@/lib/stripe';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
-import { sendSubscriptionEmail } from '@/lib/email';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { authMiddleware, addSecurityHeaders } from "@/lib/middleware";
+import { cancelSubscription, resumeSubscription } from "@/lib/stripe";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
+import { sendSubscriptionEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,10 +19,10 @@ export async function POST(request: NextRequest) {
 
     const { action, immediately } = await request.json();
 
-    if (!action || !['cancel', 'resume'].includes(action)) {
+    if (!action || !["cancel", "resume"].includes(action)) {
       return NextResponse.json(
         { error: 'Invalid action. Must be "cancel" or "resume"' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,18 +34,18 @@ export async function POST(request: NextRequest) {
 
     if (!subscription?.stripeSubscriptionId) {
       return NextResponse.json(
-        { error: 'No active subscription found' },
-        { status: 404 }
+        { error: "No active subscription found" },
+        { status: 404 },
       );
     }
 
     let updatedSubscription;
 
-    if (action === 'cancel') {
+    if (action === "cancel") {
       // Cancel subscription
       updatedSubscription = await cancelSubscription(
         subscription.stripeSubscriptionId,
-        immediately === true
+        immediately === true,
       );
 
       // Update database
@@ -50,7 +54,7 @@ export async function POST(request: NextRequest) {
         data: {
           cancelAtPeriodEnd: !immediately,
           canceledAt: immediately ? new Date() : null,
-          status: immediately ? 'CANCELLED' : subscription.status,
+          status: immediately ? "CANCELLED" : subscription.status,
         },
       });
 
@@ -59,17 +63,17 @@ export async function POST(request: NextRequest) {
         subscription.user.email,
         subscription.user.firstName,
         subscription.plan,
-        'cancelled'
+        "cancelled",
       );
 
-      logger.info('Subscription cancelled', { 
+      logger.info("Subscription cancelled", {
         userId: authResult.user.userId,
-        immediately 
+        immediately,
       });
     } else {
       // Resume subscription
       updatedSubscription = await resumeSubscription(
-        subscription.stripeSubscriptionId
+        subscription.stripeSubscriptionId,
       );
 
       // Update database
@@ -81,21 +85,21 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      logger.info('Subscription resumed', { userId: authResult.user.userId });
+      logger.info("Subscription resumed", { userId: authResult.user.userId });
     }
 
     const response = NextResponse.json(
       createSuccessResponse({
         subscription: updatedSubscription,
-      })
+      }),
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Failed to manage subscription', error);
+    logger.error("Failed to manage subscription", error);
     return NextResponse.json(
-      createErrorResponse('Failed to manage subscription', 500, error),
-      { status: 500 }
+      createErrorResponse("Failed to manage subscription", 500, error),
+      { status: 500 },
     );
   }
 }

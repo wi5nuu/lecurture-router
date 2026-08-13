@@ -1,12 +1,12 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
 // Redis client singleton
 let redis: Redis | null = null;
 
 export function getRedisClient(): Redis {
   if (!redis) {
-    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    
+    const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+
     redis = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
       enableReadyCheck: true,
@@ -15,7 +15,7 @@ export function getRedisClient(): Redis {
         return delay;
       },
       reconnectOnError(err) {
-        const targetError = 'READONLY';
+        const targetError = "READONLY";
         if (err.message.includes(targetError)) {
           return true;
         }
@@ -23,12 +23,12 @@ export function getRedisClient(): Redis {
       },
     });
 
-    redis.on('error', (err) => {
-      console.error('Redis Client Error:', err);
+    redis.on("error", (err) => {
+      console.error("Redis Client Error:", err);
     });
 
-    redis.on('connect', () => {
-      console.log('Redis Client Connected');
+    redis.on("connect", () => {
+      console.log("Redis Client Connected");
     });
   }
 
@@ -43,10 +43,10 @@ export const cache = {
     return data ? JSON.parse(data) : null;
   },
 
-  async set(key: string, value: any, ttlSeconds?: number): Promise<void> {
+  async set(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
     const client = getRedisClient();
     const serialized = JSON.stringify(value);
-    
+
     if (ttlSeconds) {
       await client.setex(key, ttlSeconds, serialized);
     } else {
@@ -91,14 +91,18 @@ export const cache = {
 
 // Session management
 export const session = {
-  async create(userId: string, sessionData: any, ttlSeconds = 86400): Promise<string> {
+  async create(
+    userId: string,
+    sessionData: unknown,
+    ttlSeconds = 86400,
+  ): Promise<string> {
     const sessionId = `session:${userId}:${Date.now()}`;
     await cache.set(sessionId, sessionData, ttlSeconds);
     return sessionId;
   },
 
-  async get(sessionId: string): Promise<any | null> {
-    return await cache.get(sessionId);
+  async get<T = unknown>(sessionId: string): Promise<T | null> {
+    return await cache.get<T>(sessionId);
   },
 
   async destroy(sessionId: string): Promise<void> {
@@ -112,19 +116,23 @@ export const session = {
 
 // Rate limiting
 export const rateLimit = {
-  async check(identifier: string, maxRequests: number, windowSeconds: number): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+  async check(
+    identifier: string,
+    maxRequests: number,
+    windowSeconds: number,
+  ): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
     const key = `ratelimit:${identifier}`;
     const client = getRedisClient();
-    
+
     const current = await client.incr(key);
-    
+
     if (current === 1) {
       await client.expire(key, windowSeconds);
     }
-    
+
     const ttl = await client.ttl(key);
-    const resetAt = Date.now() + (ttl * 1000);
-    
+    const resetAt = Date.now() + ttl * 1000;
+
     return {
       allowed: current <= maxRequests,
       remaining: Math.max(0, maxRequests - current),
@@ -139,23 +147,34 @@ export const rateLimit = {
 };
 
 // Pub/Sub for real-time features
+export interface PubSubMessage {
+  userId?: string;
+  type: string;
+  data?: unknown;
+}
+
 export const pubsub = {
-  async publish(channel: string, message: any): Promise<void> {
+  async publish(channel: string, message: unknown): Promise<void> {
     const client = getRedisClient();
     await client.publish(channel, JSON.stringify(message));
   },
 
-  subscribe(channel: string, callback: (message: any) => void): Redis {
-    const subscriber = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-    
+  subscribe(
+    channel: string,
+    callback: (message: PubSubMessage) => void,
+  ): Redis {
+    const subscriber = new Redis(
+      process.env.REDIS_URL || "redis://localhost:6379",
+    );
+
     subscriber.subscribe(channel);
-    subscriber.on('message', (ch, msg) => {
+    subscriber.on("message", (ch, msg) => {
       if (ch === channel) {
         try {
           const parsed = JSON.parse(msg);
           callback(parsed);
         } catch (error) {
-          console.error('Error parsing pubsub message:', error);
+          console.error("Error parsing pubsub message:", error);
         }
       }
     });
@@ -166,12 +185,12 @@ export const pubsub = {
 
 // Queue management for background jobs
 export const queue = {
-  async enqueue(queueName: string, job: any): Promise<void> {
+  async enqueue(queueName: string, job: unknown): Promise<void> {
     const client = getRedisClient();
     await client.rpush(`queue:${queueName}`, JSON.stringify(job));
   },
 
-  async dequeue(queueName: string): Promise<any | null> {
+  async dequeue<T = unknown>(queueName: string): Promise<T | null> {
     const client = getRedisClient();
     const data = await client.lpop(`queue:${queueName}`);
     return data ? JSON.parse(data) : null;

@@ -10,11 +10,36 @@ import { Footer } from "@/components/layout/footer";
 import { pricingTiers } from "@/lib/data";
 
 const comparisons = [
-  { feature: "Jumlah materi yang dapat diakses", free: "10% catalog", pro: "100% catalog", inst: "100% + API" },
-  { feature: "Preview dokumen", free: "3 halaman", pro: "Full preview", inst: "Full preview" },
-  { feature: "Unduh materi", free: "5/hari", pro: "Tak terbatas", inst: "Tak terbatas" },
-  { feature: "Koleksi & folder pribadi", free: "1 folder", pro: "Tak terbatas", inst: "Tak terbatas" },
-  { feature: "Iklan", free: "Ditampilkan", pro: "Tidak ada", inst: "Tidak ada" },
+  {
+    feature: "Jumlah materi yang dapat diakses",
+    free: "10% catalog",
+    pro: "100% catalog",
+    inst: "100% + API",
+  },
+  {
+    feature: "Preview dokumen",
+    free: "3 halaman",
+    pro: "Full preview",
+    inst: "Full preview",
+  },
+  {
+    feature: "Unduh materi",
+    free: "5/hari",
+    pro: "Tak terbatas",
+    inst: "Tak terbatas",
+  },
+  {
+    feature: "Koleksi & folder pribadi",
+    free: "1 folder",
+    pro: "Tak terbatas",
+    inst: "Tak terbatas",
+  },
+  {
+    feature: "Iklan",
+    free: "Ditampilkan",
+    pro: "Tidak ada",
+    inst: "Tidak ada",
+  },
   { feature: "Rekomendasi AI", free: false, pro: true, inst: true },
   { feature: "Export sitasi", free: false, pro: true, inst: true },
   { feature: "Akses offline", free: false, pro: true, inst: true },
@@ -35,12 +60,14 @@ export function PricingClient() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-16"
           >
-            <Badge variant="blue" className="mb-4 px-3 py-1">Harga</Badge>
+            <Badge variant="blue" className="mb-4 px-3 py-1">
+              Harga
+            </Badge>
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
               Pilih Paket yang Tepat
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Mulai dari gratis untuk akses dasar, hingga paket lengkap untuk 
+              Mulai dari gratis untuk akses dasar, hingga paket lengkap untuk
               institusi pendidikan
             </p>
           </motion.div>
@@ -61,7 +88,10 @@ export function PricingClient() {
               >
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge variant="blue" className="px-4 py-1 text-xs font-semibold">
+                    <Badge
+                      variant="blue"
+                      className="px-4 py-1 text-xs font-semibold"
+                    >
                       POPULER
                     </Badge>
                   </div>
@@ -74,18 +104,24 @@ export function PricingClient() {
                         <span className="text-4xl font-bold font-mono">
                           Rp {tier.price.toLocaleString()}
                         </span>
-                        <span className="text-sm text-muted-foreground">/ {tier.period}</span>
+                        <span className="text-sm text-muted-foreground">
+                          / {tier.period}
+                        </span>
                       </>
                     ) : (
                       <span className="text-4xl font-bold">Custom</span>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">{tier.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {tier.description}
+                  </p>
                 </div>
                 <ul className="space-y-3 mb-8">
                   {tier.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-3 text-sm">
-                      <Check className={`h-5 w-5 shrink-0 mt-0.5 ${tier.popular ? "text-blue" : "text-muted-foreground"}`} />
+                      <Check
+                        className={`h-5 w-5 shrink-0 mt-0.5 ${tier.popular ? "text-blue" : "text-muted-foreground"}`}
+                      />
                       <span>{feat}</span>
                     </li>
                   ))}
@@ -116,32 +152,61 @@ export function PricingClient() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left p-4 font-semibold">Fitur</th>
-                    <th className="text-center p-4 font-semibold text-blue">Free</th>
-                    <th className="text-center p-4 font-semibold text-violet">Student Pro</th>
-                    <th className="text-center p-4 font-semibold text-amber">Institution</th>
+                    <th className="text-center p-4 font-semibold text-blue">
+                      Free
+                    </th>
+                    <th className="text-center p-4 font-semibold text-violet">
+                      Student Pro
+                    </th>
+                    <th className="text-center p-4 font-semibold text-amber">
+                      Institution
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {comparisons.map((row, i) => (
-                    <tr key={i} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                      <td className="p-4 text-muted-foreground">{row.feature}</td>
+                    <tr
+                      key={i}
+                      className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                    >
+                      <td className="p-4 text-muted-foreground">
+                        {row.feature}
+                      </td>
                       <td className="p-4 text-center">
                         {typeof row.free === "boolean" ? (
-                          row.free ? <Check className="h-4 w-4 text-blue mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
+                          row.free ? (
+                            <Check className="h-4 w-4 text-blue mx-auto" />
+                          ) : (
+                            <span className="text-muted-foreground/50">
+                              &mdash;
+                            </span>
+                          )
                         ) : (
                           <span className="text-xs">{row.free}</span>
                         )}
                       </td>
                       <td className="p-4 text-center">
                         {typeof row.pro === "boolean" ? (
-                          row.pro ? <Check className="h-4 w-4 text-blue mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
+                          row.pro ? (
+                            <Check className="h-4 w-4 text-blue mx-auto" />
+                          ) : (
+                            <span className="text-muted-foreground/50">
+                              &mdash;
+                            </span>
+                          )
                         ) : (
                           <span className="text-xs">{row.pro}</span>
                         )}
                       </td>
                       <td className="p-4 text-center">
                         {typeof row.inst === "boolean" ? (
-                          row.inst ? <Check className="h-4 w-4 text-blue mx-auto" /> : <span className="text-muted-foreground/50">&mdash;</span>
+                          row.inst ? (
+                            <Check className="h-4 w-4 text-blue mx-auto" />
+                          ) : (
+                            <span className="text-muted-foreground/50">
+                              &mdash;
+                            </span>
+                          )
                         ) : (
                           <span className="text-xs">{row.inst}</span>
                         )}
@@ -160,9 +225,11 @@ export function PricingClient() {
             className="text-center mt-16 p-12 rounded-2xl border border-border bg-gradient-to-br from-blue/5 to-transparent"
           >
             <Sparkles className="h-8 w-8 text-blue mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Butuh Paket Khusus untuk Institusi Anda?</h2>
+            <h2 className="text-2xl font-bold mb-2">
+              Butuh Paket Khusus untuk Institusi Anda?
+            </h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Kami menyediakan harga khusus untuk universitas, politeknik, dan 
+              Kami menyediakan harga khusus untuk universitas, politeknik, dan
               institusi pendidikan dengan kebutuhan akses massal.
             </p>
             <Button size="lg" className="bg-blue hover:bg-blue-dark gap-2">

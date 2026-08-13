@@ -57,27 +57,51 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 group mb-4">
               <div className="relative h-8 w-8 overflow-hidden rounded-lg">
-                <Image src="/android-chrome-192x192.png" alt="LectureRouter" width={32} height={32} className="object-cover" />
+                <Image
+                  src="/android-chrome-192x192.png"
+                  alt="LectureRouter"
+                  width={32}
+                  height={32}
+                  className="object-cover"
+                />
               </div>
               <span className="text-base font-bold tracking-tight">
                 Lecture<span className="text-blue">Router</span>
               </span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-              Satu akses untuk semua materi kuliah dari seluruh dunia. 
-              Akses instan ke jutaan materi dari ribuan universitas & platform.
+              Satu akses untuk semua materi kuliah dari seluruh dunia. Akses
+              instan ke jutaan materi dari ribuan universitas & platform.
             </p>
             <div className="flex gap-3">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-blue transition-colors">
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-blue transition-colors"
+              >
                 <Code2 className="h-5 w-5" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-blue transition-colors">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-blue transition-colors"
+              >
                 <MessageCircle className="h-5 w-5" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-blue transition-colors">
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-blue transition-colors"
+              >
                 <Link2 className="h-5 w-5" />
               </a>
-              <a href="mailto:hello@lecturerouter.com" className="text-muted-foreground hover:text-blue transition-colors">
+              <a
+                href="mailto:hello@lecturerouter.com"
+                className="text-muted-foreground hover:text-blue transition-colors"
+              >
                 <Mail className="h-5 w-5" />
               </a>
             </div>
@@ -105,9 +129,13 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-border/50">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="max-w-md w-full">
-              <h4 className="text-sm font-semibold mb-2">Dapatkan update materi terbaru</h4>
+              <h4 className="text-sm font-semibold mb-2">
+                Dapatkan update materi terbaru
+              </h4>
               {subscribed ? (
-                <p className="text-sm text-blue">Terima kasih! Anda telah berlangganan.</p>
+                <p className="text-sm text-blue">
+                  Terima kasih! Anda telah berlangganan.
+                </p>
               ) : (
                 <form onSubmit={handleSubscribe} className="flex gap-2">
                   <Input
@@ -118,14 +146,18 @@ export function Footer() {
                     required
                     className="h-10 bg-background"
                   />
-                  <Button type="submit" className="bg-blue hover:bg-blue-dark shrink-0 h-10">
+                  <Button
+                    type="submit"
+                    className="bg-blue hover:bg-blue-dark shrink-0 h-10"
+                  >
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </form>
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} LectureRouter. All rights reserved.
+              &copy; {new Date().getFullYear()} LectureRouter. All rights
+              reserved.
             </p>
           </div>
         </div>

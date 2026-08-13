@@ -1,10 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import prisma from '@/lib/db';
-import { generateTokenPair } from '@/lib/jwt';
-import { validateBody, loginSchema, formatZodErrors } from '@/lib/validation';
-import { rateLimitMiddleware, addSecurityHeaders } from '@/lib/middleware';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import prisma from "@/lib/db";
+import { generateTokenPair } from "@/lib/jwt";
+import { validateBody, loginSchema, formatZodErrors } from "@/lib/validation";
+import { rateLimitMiddleware, addSecurityHeaders } from "@/lib/middleware";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,10 +26,10 @@ export async function POST(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json(
         {
-          error: 'Validation failed',
+          error: "Validation failed",
           errors: formatZodErrors(validation.errors),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -48,29 +52,34 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      logger.warn('Login attempt with non-existent email', { email });
+      logger.warn("Login attempt with non-existent email", { email });
       return NextResponse.json(
-        { error: 'Email atau password salah' },
-        { status: 401 }
+        { error: "Email atau password salah" },
+        { status: 401 },
       );
     }
 
     // Check if user is active
     if (!user.isActive) {
-      logger.warn('Login attempt for inactive account', { userId: user.id });
+      logger.warn("Login attempt for inactive account", { userId: user.id });
       return NextResponse.json(
-        { error: 'Akun Anda telah dinonaktifkan. Hubungi support untuk bantuan.' },
-        { status: 403 }
+        {
+          error:
+            "Akun Anda telah dinonaktifkan. Hubungi support untuk bantuan.",
+        },
+        { status: 403 },
       );
     }
 
     // Verify password
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
-      logger.warn('Failed login attempt - invalid password', { userId: user.id });
+      logger.warn("Failed login attempt - invalid password", {
+        userId: user.id,
+      });
       return NextResponse.json(
-        { error: 'Email atau password salah' },
-        { status: 401 }
+        { error: "Email atau password salah" },
+        { status: 401 },
       );
     }
 
@@ -105,22 +114,24 @@ export async function POST(request: NextRequest) {
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
-    logger.info('User logged in successfully', { userId: user.id, email: user.email });
+    logger.info("User logged in successfully", {
+      userId: user.id,
+      email: user.email,
+    });
 
     const response = NextResponse.json(
       createSuccessResponse({
         accessToken,
         refreshToken,
         user: userWithoutPassword,
-      })
+      }),
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Login failed', error);
-    return NextResponse.json(
-      createErrorResponse('Login failed', 500, error),
-      { status: 500 }
-    );
+    logger.error("Login failed", error);
+    return NextResponse.json(createErrorResponse("Login failed", 500, error), {
+      status: 500,
+    });
   }
 }

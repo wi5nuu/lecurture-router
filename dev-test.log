@@ -1,0 +1,17 @@
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3050
+- Network:       http://192.168.56.1:3050
+- Environments: .env
+✓ Ready in 1082ms
+
+ GET /api/materials 200 in 2.5s (next.js: 1069ms, application-code: 1381ms)
+ GET /api/categories 200 in 309ms (next.js: 216ms, application-code: 93ms)
+ GET /api/providers 200 in 399ms (next.js: 206ms, application-code: 193ms)
+ GET /api/materials/mat-001 200 in 1529ms (next.js: 1306ms, application-code: 223ms)
+ GET /api/materials/not-exist 404 in 60ms (next.js: 9ms, application-code: 51ms)
+ GET /materials/mat-001 200 in 1740ms (next.js: 984ms, application-code: 756ms)
+ GET /dashboard 200 in 87ms (next.js: 28ms, application-code: 59ms)
+ GET /providers 200 in 90ms (next.js: 32ms, application-code: 58ms)
+ GET / 200 in 196ms (next.js: 29ms, application-code: 167ms)
+✓ Compiled in 43ms
+✓ Compiled in 355ms

@@ -11,6 +11,9 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
     console.error("Failed to list categories:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

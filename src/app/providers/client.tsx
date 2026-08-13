@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Database, ArrowUpDown, Loader2, RefreshCw } from "lucide-react";
+import {
+  Search,
+  Database,
+  ArrowUpDown,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProviderCard } from "@/components/shared/provider-card";
@@ -85,7 +91,7 @@ export function ProvidersClient() {
         setProviders(await fetchProviders());
       } catch (error) {
         setLoadError(
-          error instanceof Error ? error.message : "Terjadi kesalahan"
+          error instanceof Error ? error.message : "Terjadi kesalahan",
         );
       } finally {
         setLoading(false);
@@ -104,7 +110,7 @@ export function ProvidersClient() {
       } catch (error) {
         if (!cancelled) {
           setLoadError(
-            error instanceof Error ? error.message : "Terjadi kesalahan"
+            error instanceof Error ? error.message : "Terjadi kesalahan",
           );
         }
       } finally {
@@ -125,7 +131,7 @@ export function ProvidersClient() {
       freemium: providers.filter((p) => p.priceModel === "Freemium").length,
       premium: providers.filter((p) => p.priceModel === "Premium").length,
     }),
-    [providers]
+    [providers],
   );
 
   const filtered = useMemo(() => {
@@ -199,7 +205,7 @@ export function ProvidersClient() {
                     "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
                     priceFilter === pf
                       ? "bg-blue/10 text-blue border border-blue/20"
-                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                      : "bg-muted text-muted-foreground hover:text-foreground border border-transparent",
                   )}
                 >
                   {pf}
@@ -212,7 +218,9 @@ export function ProvidersClient() {
             <div className="flex items-center gap-2 text-sm">
               <Database className="h-4 w-4 text-blue shrink-0" />
               <span className="text-muted-foreground whitespace-nowrap">
-                Total: <span className="font-semibold font-mono">{stats.total}</span> provider
+                Total:{" "}
+                <span className="font-semibold font-mono">{stats.total}</span>{" "}
+                provider
               </span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -243,8 +251,10 @@ export function ProvidersClient() {
           </div>
 
           <div className="text-sm text-muted-foreground mb-6">
-            Menampilkan <span className="font-semibold font-mono">{filtered.length}</span> dari{" "}
-            <span className="font-semibold font-mono">{stats.total}</span> provider
+            Menampilkan{" "}
+            <span className="font-semibold font-mono">{filtered.length}</span>{" "}
+            dari <span className="font-semibold font-mono">{stats.total}</span>{" "}
+            provider
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -260,17 +270,27 @@ export function ProvidersClient() {
             {!loading && loadError && (
               <div className="col-span-full text-center py-20">
                 <Database className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Gagal memuat provider</h3>
-                <p className="text-sm text-muted-foreground mb-4">{loadError}</p>
-                <Button variant="outline" className="gap-2" onClick={handleRetry}>
+                <h3 className="text-lg font-semibold mb-2">
+                  Gagal memuat provider
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {loadError}
+                </p>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handleRetry}
+                >
                   <RefreshCw className="h-4 w-4" /> Coba Lagi
                 </Button>
               </div>
             )}
 
-            {!loading && !loadError && filtered.map((provider, i) => (
-              <ProviderCard key={provider.id} provider={provider} index={i} />
-            ))}
+            {!loading &&
+              !loadError &&
+              filtered.map((provider, i) => (
+                <ProviderCard key={provider.id} provider={provider} index={i} />
+              ))}
           </div>
 
           {!loading && !loadError && filtered.length === 0 && (

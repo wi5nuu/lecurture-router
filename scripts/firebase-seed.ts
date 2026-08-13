@@ -9,7 +9,10 @@ import {
   createMaterial,
   countMaterials,
 } from "../src/lib/firestore";
-import { isFirebaseConfigured, FirebaseNotConfiguredError } from "../src/lib/firebase";
+import {
+  isFirebaseConfigured,
+  FirebaseNotConfiguredError,
+} from "../src/lib/firebase";
 
 async function seed() {
   console.log("Syncing catalog to Firebase Firestore...\n");
@@ -50,12 +53,8 @@ async function seed() {
     console.log(`  - ${provider.name}`);
   }
 
-  const categoryNameById = new Map(
-    seedCategories.map((c) => [c.id, c.name])
-  );
-  const providerLogoById = new Map(
-    seedProviders.map((p) => [p.id, p.logo])
-  );
+  const categoryNameById = new Map(seedCategories.map((c) => [c.id, c.name]));
+  const providerLogoById = new Map(seedProviders.map((p) => [p.id, p.logo]));
 
   console.log(`\nSeeding ${seedMaterials.length} materials...`);
   for (const mat of seedMaterials) {

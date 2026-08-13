@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FileText, Play, BookOpen, Star, Download, Bookmark } from "lucide-react";
+import {
+  FileText,
+  Play,
+  BookOpen,
+  Star,
+  Download,
+  Bookmark,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,14 +48,24 @@ export function MaterialCard({ material, index = 0 }: MaterialCardProps) {
         <Card className="group h-full overflow-hidden hover:shadow-lg hover:border-blue/30 dark:hover:border-blue/20 transition-all duration-300 cursor-pointer">
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
-                formatColors[material.format]
-              )}>
+              <div
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+                  formatColors[material.format],
+                )}
+              >
                 {formatIcons[material.format]}
                 {material.format}
               </div>
-              <Badge variant={material.price === "Gratis" ? "blue" : material.price === "Freemium" ? "amber" : "blue"}>
+              <Badge
+                variant={
+                  material.price === "Gratis"
+                    ? "blue"
+                    : material.price === "Freemium"
+                      ? "amber"
+                      : "blue"
+                }
+              >
                 {material.price}
               </Badge>
             </div>
@@ -73,7 +90,9 @@ export function MaterialCard({ material, index = 0 }: MaterialCardProps) {
               <div className="flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 text-amber fill-amber" />
                 <span className="text-xs font-medium">{material.rating}</span>
-                <span className="text-xs text-muted-foreground">({material.reviewCount.toLocaleString()})</span>
+                <span className="text-xs text-muted-foreground">
+                  ({material.reviewCount.toLocaleString()})
+                </span>
               </div>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button

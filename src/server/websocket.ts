@@ -1,20 +1,20 @@
-import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
-import { verifyAccessToken } from '../lib/jwt';
-import { logger } from '../lib/logger';
-import { pubsub } from '../lib/redis';
-import prisma from '../lib/db';
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
+import { verifyAccessToken } from "../lib/jwt";
+import { logger } from "../lib/logger";
+import { pubsub } from "../lib/redis";
+import prisma from "../lib/db";
 
-const PORT = parseInt(process.env.WS_PORT || '3001');
+const PORT = parseInt(process.env.WS_PORT || "3001");
 
 const httpServer = createServer();
 
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     credentials: true,
   },
-  transports: ['websocket', 'polling'],
+  transports: ["websocket", "polling"],
 });
 
 // Store user socket mappings
@@ -23,15 +23,17 @@ const userSockets = new Map<string, Set<string>>();
 // Authentication middleware
 io.use(async (socket, next) => {
   try {
-    const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+    const token =
+      socket.handshake.auth.token ||
+      socket.handshake.headers.authorization?.replace("Bearer ", "");
 
     if (!token) {
-      return next(new Error('Authentication token required'));
+      return next(new Error("Authentication token required"));
     }
 
     const payload = await verifyAccessToken(token);
     if (!payload) {
-      return next(new Error('Invalid or expired token'));
+      return next(new Error("Invalid or expired token"));
     }
 
     // Attach user info to socket
@@ -39,18 +41,21 @@ io.use(async (socket, next) => {
     socket.data.email = payload.email;
     socket.data.role = payload.role;
 
-    logger.info('WebSocket authentication successful', { userId: payload.userId, socketId: socket.id });
+    logger.info("WebSocket authentication successful", {
+      userId: payload.userId,
+      socketId: socket.id,
+    });
     next();
   } catch (error) {
-    logger.error('WebSocket authentication failed', error);
-    next(new Error('Authentication failed'));
+    logger.error("WebSocket authentication failed", error);
+    next(new Error("Authentication failed"));
   }
 });
 
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
   const userId = socket.data.userId;
-  
-  logger.info('Client connected', { userId, socketId: socket.id });
+
+  logger.info("Client connected", { userId, socketId: socket.id });
 
   // Track user's socket
   if (!userSockets.has(userId)) {
@@ -62,49 +67,63 @@ io.on('connection', (socket) => {
   socket.join(`user:${userId}`);
 
   // Send connection confirmation
-  socket.emit('connected', {
-    message: 'Connected to WebSocket server',
+  socket.emit("connected", {
+    message: "Connected to WebSocket server",
     userId,
     timestamp: new Date().toISOString(),
   });
 
   // Handle subscription to channels
-  socket.on('subscribe', (channel: string) => {
+  socket.on("subscribe", (channel: string) => {
     socket.join(channel);
-    logger.debug('Client subscribed to channel', { userId, socketId: socket.id, channel });
-    socket.emit('subscribed', { channel });
+    logger.debug("Client subscribed to channel", {
+      userId,
+      socketId: socket.id,
+      channel,
+    });
+    socket.emit("subscribed", { channel });
   });
 
   // Handle unsubscription
-  socket.on('unsubscribe', (channel: string) => {
+  socket.on("unsubscribe", (channel: string) => {
     socket.leave(channel);
-    logger.debug('Client unsubscribed from channel', { userId, socketId: socket.id, channel });
-    socket.emit('unsubscribed', { channel });
+    logger.debug("Client unsubscribed from channel", {
+      userId,
+      socketId: socket.id,
+      channel,
+    });
+    socket.emit("unsubscribed", { channel });
   });
 
   // Handle mark notification as read
-  socket.on('notification:read', async (notificationId: string) => {
+  socket.on("notification:read", async (notificationId: string) => {
     try {
       await prisma.notification.update({
         where: { id: notificationId, userId },
         data: { isRead: true, readAt: new Date() },
       });
 
-      socket.emit('notification:read:success', { notificationId });
+      socket.emit("notification:read:success", { notificationId });
     } catch (error) {
-      logger.error('Failed to mark notification as read', error, { userId, notificationId });
-      socket.emit('notification:read:error', { notificationId, error: 'Failed to mark as read' });
+      logger.error("Failed to mark notification as read", error, {
+        userId,
+        notificationId,
+      });
+      socket.emit("notification:read:error", {
+        notificationId,
+        error: "Failed to mark as read",
+      });
     }
   });
 
   // Handle ping/pong for connection health
-  socket.on('ping', () => {
-    socket.emit('pong', { timestamp: new Date().toISOString() });
+  socket.on("ping", () => {
+    socket.emit("pong", { timestamp: new Date().toISOString() });
   });
 
   // Handle disconnection
-  socket.on('disconnect', (reason) => {
-    logger.info('Client disconnected', { userId, socketId: socket.id, reason });
+  socket.on("disconnect", (reason) => {
+    logger.info("Client disconnected", { userId, socketId: socket.id, reason });
 
     const sockets = userSockets.get(userId);
     if (sockets) {
@@ -116,13 +135,13 @@ io.on('connection', (socket) => {
   });
 
   // Handle errors
-  socket.on('error', (error) => {
-    logger.error('Socket error', error, { userId, socketId: socket.id });
+  socket.on("error", (error) => {
+    logger.error("Socket error", error, { userId, socketId: socket.id });
   });
 });
 
 // Redis pub/sub integration for multi-instance support
-const subscriber = pubsub.subscribe('notifications', (message) => {
+const subscriber = pubsub.subscribe("notifications", (message) => {
   const { userId, type, data } = message;
 
   // Send to specific user
@@ -135,20 +154,20 @@ const subscriber = pubsub.subscribe('notifications', (message) => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, closing WebSocket server...');
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received, closing WebSocket server...");
   subscriber.disconnect();
   io.close(() => {
-    logger.info('WebSocket server closed');
+    logger.info("WebSocket server closed");
     process.exit(0);
   });
 });
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, closing WebSocket server...');
+process.on("SIGINT", () => {
+  logger.info("SIGINT received, closing WebSocket server...");
   subscriber.disconnect();
   io.close(() => {
-    logger.info('WebSocket server closed');
+    logger.info("WebSocket server closed");
     process.exit(0);
   });
 });

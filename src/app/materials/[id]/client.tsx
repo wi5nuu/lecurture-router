@@ -5,11 +5,26 @@ import { type Material } from "@/lib/data";
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Share2, Star,
-  ExternalLink, Calendar, User, Building2, Quote,
-  FileText, BookOpen, Globe, BarChart3, Tag,
-  Copy, Printer, Check,
-  List, Clock, FileDown, Play,
+  ArrowLeft,
+  Share2,
+  Star,
+  ExternalLink,
+  Calendar,
+  User,
+  Building2,
+  Quote,
+  FileText,
+  BookOpen,
+  Globe,
+  BarChart3,
+  Tag,
+  Copy,
+  Printer,
+  Check,
+  List,
+  Clock,
+  FileDown,
+  Play,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,7 +76,9 @@ interface Props {
 export function MaterialDetailClient({ material, related }: Props) {
   const [copied, setCopied] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
-  const [citationCopied, setCitationCopied] = useState<"apa" | "mla" | null>(null);
+  const [citationCopied, setCitationCopied] = useState<"apa" | "mla" | null>(
+    null,
+  );
   const [isPrinting, setIsPrinting] = useState(false);
 
   const paragraphs = material.fullContent
@@ -154,7 +171,7 @@ export function MaterialDetailClient({ material, related }: Props) {
         setTimeout(() => setCitationCopied(null), 2000);
       } catch {}
     },
-    [material]
+    [material],
   );
 
   return (
@@ -243,7 +260,11 @@ export function MaterialDetailClient({ material, related }: Props) {
                   >
                     <Printer className="h-4 w-4" /> Cetak
                   </Button>
-                  <Button variant="outline" className="gap-2" onClick={handleCopy}>
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={handleCopy}
+                  >
                     {copied ? (
                       <>
                         <Check className="h-4 w-4" /> Tersalin
@@ -277,8 +298,7 @@ export function MaterialDetailClient({ material, related }: Props) {
                       {words.toLocaleString()} kata
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      ~{minutes} menit baca
+                      <Clock className="h-4 w-4" />~{minutes} menit baca
                     </span>
                     {material.isbn && (
                       <span className="inline-flex items-center gap-1">
@@ -300,7 +320,7 @@ export function MaterialDetailClient({ material, related }: Props) {
                               key={i}
                               onClick={() => {
                                 const el = document.getElementById(
-                                  `section-${i}`
+                                  `section-${i}`,
                                 );
                                 el?.scrollIntoView({ behavior: "smooth" });
                               }}
@@ -323,7 +343,7 @@ export function MaterialDetailClient({ material, related }: Props) {
                         {paragraphs.map((para, i) => {
                           const isHeading =
                             /^(BAB|MODUL|SESI)\s+[\dIVXLCDM]+/i.test(
-                              para.trim()
+                              para.trim(),
                             );
                           if (isHeading) {
                             return (
@@ -454,9 +474,7 @@ export function MaterialDetailClient({ material, related }: Props) {
                           <p className="text-muted-foreground text-xs">
                             Universitas
                           </p>
-                          <p className="font-medium">
-                            {material.university}
-                          </p>
+                          <p className="font-medium">{material.university}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
@@ -465,9 +483,7 @@ export function MaterialDetailClient({ material, related }: Props) {
                           <p className="text-muted-foreground text-xs">
                             Dosen/Instruktur
                           </p>
-                          <p className="font-medium">
-                            {material.instructor}
-                          </p>
+                          <p className="font-medium">{material.instructor}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
@@ -496,9 +512,7 @@ export function MaterialDetailClient({ material, related }: Props) {
                       <div className="flex items-start gap-3">
                         <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-muted-foreground text-xs">
-                            Tahun
-                          </p>
+                          <p className="text-muted-foreground text-xs">Tahun</p>
                           <p className="font-medium">{material.year}</p>
                         </div>
                       </div>
@@ -529,9 +543,7 @@ export function MaterialDetailClient({ material, related }: Props) {
                             <p className="text-muted-foreground text-xs">
                               Halaman
                             </p>
-                            <p className="font-medium">
-                              {material.pages} hlm
-                            </p>
+                            <p className="font-medium">{material.pages} hlm</p>
                           </div>
                         </div>
                       )}

@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { authMiddleware, addSecurityHeaders } from '@/lib/middleware';
-import { createCheckoutSession, SUBSCRIPTION_PLANS } from '@/lib/stripe';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { authMiddleware, addSecurityHeaders } from "@/lib/middleware";
+import { createCheckoutSession, SUBSCRIPTION_PLANS } from "@/lib/stripe";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,21 +19,25 @@ export async function POST(request: NextRequest) {
     const { plan } = await request.json();
 
     // Validate plan
-    if (!plan || !['BASIC', 'PRO', 'ENTERPRISE'].includes(plan)) {
+    if (!plan || !["BASIC", "PRO", "ENTERPRISE"].includes(plan)) {
       return NextResponse.json(
-        { error: 'Invalid subscription plan' },
-        { status: 400 }
+        { error: "Invalid subscription plan" },
+        { status: 400 },
       );
     }
 
     // The type `keyof typeof SUBSCRIPTION_PLANS` includes FREE, which has no stripePriceId.
-    // We can cast the planConfig to any or use in operator.
-    const planConfig = SUBSCRIPTION_PLANS[plan as keyof typeof SUBSCRIPTION_PLANS] as any;
-    
+    // Intersect with optional stripePriceId so the check below works without `any`.
+    const planConfig = SUBSCRIPTION_PLANS[
+      plan as keyof typeof SUBSCRIPTION_PLANS
+    ] as (typeof SUBSCRIPTION_PLANS)[keyof typeof SUBSCRIPTION_PLANS] & {
+      stripePriceId?: string;
+    };
+
     if (!planConfig.stripePriceId) {
       return NextResponse.json(
-        { error: 'Stripe price ID not configured for this plan' },
-        { status: 500 }
+        { error: "Stripe price ID not configured for this plan" },
+        { status: 500 },
       );
     }
 
@@ -40,24 +48,21 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe customer if needed
     let stripeCustomerId = subscription?.stripeCustomerId;
-    
+
     if (!stripeCustomerId) {
       const user = await prisma.user.findUnique({
         where: { id: authResult.user.userId },
       });
 
       if (!user) {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
-      const { createStripeCustomer } = await import('@/lib/stripe');
+      const { createStripeCustomer } = await import("@/lib/stripe");
       const customer = await createStripeCustomer(
         user.email,
         user.id,
-        `${user.firstName} ${user.lastName}`
+        `${user.firstName} ${user.lastName}`,
       );
 
       stripeCustomerId = customer.id;
@@ -80,28 +85,28 @@ export async function POST(request: NextRequest) {
       planConfig.stripePriceId,
       successUrl,
       cancelUrl,
-      plan === 'BASIC' ? 14 : undefined // 14-day trial for Basic plan
+      plan === "BASIC" ? 14 : undefined, // 14-day trial for Basic plan
     );
 
-    logger.info('Checkout session created', { 
-      userId: authResult.user.userId, 
+    logger.info("Checkout session created", {
+      userId: authResult.user.userId,
       plan,
-      sessionId: session.id 
+      sessionId: session.id,
     });
 
     const response = NextResponse.json(
       createSuccessResponse({
         sessionId: session.id,
         url: session.url,
-      })
+      }),
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Failed to create checkout session', error);
+    logger.error("Failed to create checkout session", error);
     return NextResponse.json(
-      createErrorResponse('Failed to create checkout session', 500, error),
-      { status: 500 }
+      createErrorResponse("Failed to create checkout session", 500, error),
+      { status: 500 },
     );
   }
 }

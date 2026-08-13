@@ -1,22 +1,24 @@
-import { pubsub } from './redis';
-import prisma from './db';
-import { logger } from './logger';
-import { sendNotificationEmail } from './email';
-import { Prisma } from '../generated/prisma';
-import { getMaterialById } from './firestore';
+import { pubsub } from "./redis";
+import prisma from "./db";
+import { logger } from "./logger";
+import { sendNotificationEmail } from "./email";
+import { Prisma } from "../generated/prisma";
+import { getMaterialById } from "./firestore";
 
 export interface NotificationPayload {
   userId: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   link?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   sendEmail?: boolean;
 }
 
 // Create and send notification
-export async function sendNotification(payload: NotificationPayload): Promise<void> {
+export async function sendNotification(
+  payload: NotificationPayload,
+): Promise<void> {
   try {
     // Create notification in database
     const notification = await prisma.notification.create({
@@ -26,14 +28,15 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
         message: payload.message,
         type: payload.type,
         link: payload.link || null,
-        metadata: (payload.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
+        metadata: (payload.metadata ?? undefined) as
+          Prisma.InputJsonValue | undefined,
       },
     });
 
     // Publish to Redis for real-time delivery
-    await pubsub.publish('notifications', {
+    await pubsub.publish("notifications", {
       userId: payload.userId,
-      type: 'notification',
+      type: "notification",
       data: notification,
     });
 
@@ -49,14 +52,19 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
           user.email,
           user.firstName,
           payload.title,
-          payload.message
+          payload.message,
         );
       }
     }
 
-    logger.info('Notification sent', { userId: payload.userId, notificationId: notification.id });
+    logger.info("Notification sent", {
+      userId: payload.userId,
+      notificationId: notification.id,
+    });
   } catch (error) {
-    logger.error('Failed to send notification', error, { userId: payload.userId });
+    logger.error("Failed to send notification", error, {
+      userId: payload.userId,
+    });
     throw error;
   }
 }
@@ -64,25 +72,23 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
 // Send notification to multiple users
 export async function sendBulkNotification(
   userIds: string[],
-  notification: Omit<NotificationPayload, 'userId'>
+  notification: Omit<NotificationPayload, "userId">,
 ): Promise<void> {
   try {
     const notifications = await Promise.all(
-      userIds.map((userId) =>
-        sendNotification({ ...notification, userId })
-      )
+      userIds.map((userId) => sendNotification({ ...notification, userId })),
     );
 
-    logger.info('Bulk notification sent', { userCount: userIds.length });
+    logger.info("Bulk notification sent", { userCount: userIds.length });
   } catch (error) {
-    logger.error('Failed to send bulk notification', error);
+    logger.error("Failed to send bulk notification", error);
     throw error;
   }
 }
 
 // Broadcast to all users
 export async function broadcastNotification(
-  notification: Omit<NotificationPayload, 'userId'>
+  notification: Omit<NotificationPayload, "userId">,
 ): Promise<void> {
   try {
     // Get all active users
@@ -93,39 +99,43 @@ export async function broadcastNotification(
 
     await sendBulkNotification(
       users.map((u) => u.id),
-      notification
+      notification,
     );
 
-    logger.info('Broadcast notification sent', { userCount: users.length });
+    logger.info("Broadcast notification sent", { userCount: users.length });
   } catch (error) {
-    logger.error('Failed to broadcast notification', error);
+    logger.error("Failed to broadcast notification", error);
     throw error;
   }
 }
 
 // Mark all notifications as read for a user
-export async function markAllNotificationsAsRead(userId: string): Promise<void> {
+export async function markAllNotificationsAsRead(
+  userId: string,
+): Promise<void> {
   try {
     await prisma.notification.updateMany({
       where: { userId, isRead: false },
       data: { isRead: true, readAt: new Date() },
     });
 
-    logger.info('All notifications marked as read', { userId });
+    logger.info("All notifications marked as read", { userId });
   } catch (error) {
-    logger.error('Failed to mark all notifications as read', error, { userId });
+    logger.error("Failed to mark all notifications as read", error, { userId });
     throw error;
   }
 }
 
 // Get unread notification count
-export async function getUnreadNotificationCount(userId: string): Promise<number> {
+export async function getUnreadNotificationCount(
+  userId: string,
+): Promise<number> {
   try {
     return await prisma.notification.count({
       where: { userId, isRead: false },
     });
   } catch (error) {
-    logger.error('Failed to get unread notification count', error, { userId });
+    logger.error("Failed to get unread notification count", error, { userId });
     return 0;
   }
 }
@@ -148,25 +158,30 @@ export async function notifyMaterialUpdate(materialId: string): Promise<void> {
       bookmarks.map((bookmark) =>
         sendNotification({
           userId: bookmark.userId,
-          title: 'Material Updated',
+          title: "Material Updated",
           message: `"${material.title}" has been updated`,
-          type: 'info',
+          type: "info",
           link: `/materials/${materialId}`,
           metadata: { materialId, materialTitle: material.title },
-        })
-      )
+        }),
+      ),
     );
 
     // Broadcast update event
-    await pubsub.publish('notifications', {
+    await pubsub.publish("notifications", {
       userId: null, // broadcast to all
-      type: 'material:update',
+      type: "material:update",
       data: { materialId, material },
     });
 
-    logger.info('Material update notification sent', { materialId, userCount: bookmarks.length });
+    logger.info("Material update notification sent", {
+      materialId,
+      userCount: bookmarks.length,
+    });
   } catch (error) {
-    logger.error('Failed to send material update notification', error, { materialId });
+    logger.error("Failed to send material update notification", error, {
+      materialId,
+    });
   }
 }
 
@@ -178,14 +193,16 @@ export async function notifyNewMaterial(materialId: string): Promise<void> {
     if (!material) return;
 
     // Broadcast new material event
-    await pubsub.publish('notifications', {
+    await pubsub.publish("notifications", {
       userId: null, // broadcast to all
-      type: 'material:new',
+      type: "material:new",
       data: { materialId, material },
     });
 
-    logger.info('New material notification sent', { materialId });
+    logger.info("New material notification sent", { materialId });
   } catch (error) {
-    logger.error('Failed to send new material notification', error, { materialId });
+    logger.error("Failed to send new material notification", error, {
+      materialId,
+    });
   }
 }

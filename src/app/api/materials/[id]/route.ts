@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMaterialWithRelated, incrementMaterialViews } from "@/lib/firestore";
+import {
+  getMaterialWithRelated,
+  incrementMaterialViews,
+} from "@/lib/firestore";
 import { FirebaseNotConfiguredError } from "@/lib/firebase";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -12,7 +15,10 @@ export async function GET(
     const result = await getMaterialWithRelated(id);
 
     if (!result) {
-      return NextResponse.json({ error: "Material not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Material not found" },
+        { status: 404 },
+      );
     }
 
     const { material, related } = result;
@@ -48,6 +54,9 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
     console.error("Failed to fetch material:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

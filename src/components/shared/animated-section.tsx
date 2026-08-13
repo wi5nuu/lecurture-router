@@ -9,7 +9,11 @@ interface AnimatedSectionProps {
   delay?: number;
 }
 
-export function AnimatedSection({ children, className, delay = 0 }: AnimatedSectionProps) {
+export function AnimatedSection({
+  children,
+  className,
+  delay = 0,
+}: AnimatedSectionProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -23,7 +27,11 @@ export function AnimatedSection({ children, className, delay = 0 }: AnimatedSect
   );
 }
 
-export function AnimatedFadeIn({ children, className, delay = 0 }: AnimatedSectionProps) {
+export function AnimatedFadeIn({
+  children,
+  className,
+  delay = 0,
+}: AnimatedSectionProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -37,7 +45,13 @@ export function AnimatedFadeIn({ children, className, delay = 0 }: AnimatedSecti
   );
 }
 
-export function AnimatedStagger({ children, className }: { children: React.ReactNode; className?: string }) {
+export function AnimatedStagger({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <motion.div
       initial="hidden"
@@ -54,7 +68,11 @@ export function AnimatedStagger({ children, className }: { children: React.React
   );
 }
 
-export function AnimatedItem({ children, className, delay = 0 }: AnimatedSectionProps) {
+export function AnimatedItem({
+  children,
+  className,
+  delay = 0,
+}: AnimatedSectionProps) {
   return (
     <motion.div
       variants={{

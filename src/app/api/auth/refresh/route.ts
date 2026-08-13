@@ -1,9 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { verifyRefreshToken, generateTokenPair } from '@/lib/jwt';
-import { validateBody, refreshTokenSchema, formatZodErrors } from '@/lib/validation';
-import { addSecurityHeaders } from '@/lib/middleware';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { verifyRefreshToken, generateTokenPair } from "@/lib/jwt";
+import {
+  validateBody,
+  refreshTokenSchema,
+  formatZodErrors,
+} from "@/lib/validation";
+import { addSecurityHeaders } from "@/lib/middleware";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,10 +21,10 @@ export async function POST(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json(
         {
-          error: 'Validation failed',
+          error: "Validation failed",
           errors: formatZodErrors(validation.errors),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,8 +34,8 @@ export async function POST(request: NextRequest) {
     const payload = await verifyRefreshToken(refreshToken);
     if (!payload) {
       return NextResponse.json(
-        { error: 'Invalid or expired refresh token' },
-        { status: 401 }
+        { error: "Invalid or expired refresh token" },
+        { status: 401 },
       );
     }
 
@@ -39,8 +47,8 @@ export async function POST(request: NextRequest) {
 
     if (!storedToken) {
       return NextResponse.json(
-        { error: 'Refresh token not found' },
-        { status: 401 }
+        { error: "Refresh token not found" },
+        { status: 401 },
       );
     }
 
@@ -52,25 +60,26 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json(
-        { error: 'Refresh token expired' },
-        { status: 401 }
+        { error: "Refresh token expired" },
+        { status: 401 },
       );
     }
 
     // Check if user is active
     if (!storedToken.user.isActive) {
       return NextResponse.json(
-        { error: 'User account is inactive' },
-        { status: 403 }
+        { error: "User account is inactive" },
+        { status: 403 },
       );
     }
 
     // Generate new token pair
-    const { accessToken, refreshToken: newRefreshToken } = await generateTokenPair({
-      id: storedToken.user.id,
-      email: storedToken.user.email,
-      role: storedToken.user.role,
-    });
+    const { accessToken, refreshToken: newRefreshToken } =
+      await generateTokenPair({
+        id: storedToken.user.id,
+        email: storedToken.user.email,
+        role: storedToken.user.role,
+      });
 
     // Delete old refresh token
     await prisma.refreshToken.delete({
@@ -89,21 +98,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('Token refreshed successfully', { userId: storedToken.user.id });
+    logger.info("Token refreshed successfully", {
+      userId: storedToken.user.id,
+    });
 
     const response = NextResponse.json(
       createSuccessResponse({
         accessToken,
         refreshToken: newRefreshToken,
-      })
+      }),
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Token refresh failed', error);
+    logger.error("Token refresh failed", error);
     return NextResponse.json(
-      createErrorResponse('Token refresh failed', 500, error),
-      { status: 500 }
+      createErrorResponse("Token refresh failed", 500, error),
+      { status: 500 },
     );
   }
 }

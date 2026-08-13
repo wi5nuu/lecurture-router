@@ -1,74 +1,78 @@
-import { Meilisearch } from 'meilisearch';
-import { logger } from './logger';
+import { Meilisearch } from "meilisearch";
+import { logger } from "./logger";
 import {
   getMaterialById,
   getMaterialsByIds,
   getAllMaterials,
   getProviderById,
-} from './firestore';
+} from "./firestore";
 
 const client = new Meilisearch({
-  host: process.env.MEILISEARCH_HOST || 'http://localhost:7700',
+  host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
   apiKey: process.env.MEILISEARCH_MASTER_KEY,
 });
 
-const MATERIALS_INDEX = 'materials';
-const PROVIDERS_INDEX = 'providers';
+const MATERIALS_INDEX = "materials";
+const PROVIDERS_INDEX = "providers";
 
 // Initialize search indexes
 export async function initializeSearchIndexes() {
   try {
     // Create materials index
-    await client.createIndex(MATERIALS_INDEX, { primaryKey: 'id' });
-    
+    await client.createIndex(MATERIALS_INDEX, { primaryKey: "id" });
+
     // Configure searchable attributes
-    await client.index(MATERIALS_INDEX).updateSearchableAttributes([
-      'title',
-      'description',
-      'tags',
-      'instructor',
-      'university',
-      'course',
-    ]);
+    await client
+      .index(MATERIALS_INDEX)
+      .updateSearchableAttributes([
+        "title",
+        "description",
+        "tags",
+        "instructor",
+        "university",
+        "course",
+      ]);
 
     // Configure filterable attributes
-    await client.index(MATERIALS_INDEX).updateFilterableAttributes([
-      'providerId',
-      'categoryId',
-      'format',
-      'language',
-      'level',
-      'year',
-      'rating',
-      'isPublished',
-    ]);
+    await client
+      .index(MATERIALS_INDEX)
+      .updateFilterableAttributes([
+        "providerId",
+        "categoryId",
+        "format",
+        "language",
+        "level",
+        "year",
+        "rating",
+        "isPublished",
+      ]);
 
     // Configure sortable attributes
-    await client.index(MATERIALS_INDEX).updateSortableAttributes([
-      'title',
-      'rating',
-      'year',
-      'createdAt',
-      'viewCount',
-    ]);
+    await client
+      .index(MATERIALS_INDEX)
+      .updateSortableAttributes([
+        "title",
+        "rating",
+        "year",
+        "createdAt",
+        "viewCount",
+      ]);
 
     // Create providers index
-    await client.createIndex(PROVIDERS_INDEX, { primaryKey: 'id' });
-    
-    await client.index(PROVIDERS_INDEX).updateSearchableAttributes([
-      'name',
-      'description',
-    ]);
+    await client.createIndex(PROVIDERS_INDEX, { primaryKey: "id" });
 
-    await client.index(PROVIDERS_INDEX).updateFilterableAttributes([
-      'isActive',
-      'rating',
-    ]);
+    await client
+      .index(PROVIDERS_INDEX)
+      .updateSearchableAttributes(["name", "description"]);
 
-    logger.info('Search indexes initialized successfully');
-  } catch (error: any) {
-    if (error.code !== 'index_already_exists') {
-      logger.error('Failed to initialize search indexes', error);
+    await client
+      .index(PROVIDERS_INDEX)
+      .updateFilterableAttributes(["isActive", "rating"]);
+
+    logger.info("Search indexes initialized successfully");
+  } catch (error) {
+    if ((error as { code?: string }).code !== "index_already_exists") {
+      logger.error("Failed to initialize search indexes", error);
       throw error;
     }
   }
@@ -80,7 +84,7 @@ export async function indexMaterial(materialId: string) {
     const material = await getMaterialById(materialId);
 
     if (!material) {
-      logger.warn('Material not found for indexing', { materialId });
+      logger.warn("Material not found for indexing", { materialId });
       return;
     }
 
@@ -107,9 +111,9 @@ export async function indexMaterial(materialId: string) {
     };
 
     await client.index(MATERIALS_INDEX).addDocuments([document]);
-    logger.debug('Material indexed', { materialId });
+    logger.debug("Material indexed", { materialId });
   } catch (error) {
-    logger.error('Failed to index material', error, { materialId });
+    logger.error("Failed to index material", error, { materialId });
     throw error;
   }
 }
@@ -142,9 +146,9 @@ export async function indexMaterials(materialIds: string[]) {
     }));
 
     await client.index(MATERIALS_INDEX).addDocuments(documents);
-    logger.info('Materials indexed', { count: documents.length });
+    logger.info("Materials indexed", { count: documents.length });
   } catch (error) {
-    logger.error('Failed to index materials', error);
+    logger.error("Failed to index materials", error);
     throw error;
   }
 }
@@ -178,10 +182,10 @@ export async function indexAllMaterials() {
     }));
 
     await client.index(MATERIALS_INDEX).addDocuments(documents);
-    logger.info('All materials indexed', { count: documents.length });
+    logger.info("All materials indexed", { count: documents.length });
     return documents.length;
   } catch (error) {
-    logger.error('Failed to index all materials', error);
+    logger.error("Failed to index all materials", error);
     throw error;
   }
 }
@@ -190,9 +194,9 @@ export async function indexAllMaterials() {
 export async function deleteMaterialFromIndex(materialId: string) {
   try {
     await client.index(MATERIALS_INDEX).deleteDocument(materialId);
-    logger.debug('Material deleted from index', { materialId });
+    logger.debug("Material deleted from index", { materialId });
   } catch (error) {
-    logger.error('Failed to delete material from index', error, { materialId });
+    logger.error("Failed to delete material from index", error, { materialId });
   }
 }
 
@@ -211,10 +215,10 @@ export async function searchMaterials(
     limit?: number;
     offset?: number;
     sort?: string[];
-  }
+  },
 ) {
   try {
-    const filterArray: string[] = ['isPublished = true'];
+    const filterArray: string[] = ["isPublished = true"];
 
     if (filters?.categoryId) {
       filterArray.push(`categoryId = "${filters.categoryId}"`);
@@ -235,19 +239,20 @@ export async function searchMaterials(
       filterArray.push(`rating >= ${filters.minRating}`);
     }
 
-    const searchParams: any = {
+    const searchParams = {
       filter: filterArray,
       limit: options?.limit || 20,
       offset: options?.offset || 0,
+      ...(options?.sort && options.sort.length > 0
+        ? { sort: options.sort }
+        : {}),
     };
 
-    if (options?.sort && options.sort.length > 0) {
-      searchParams.sort = options.sort;
-    }
+    const results = await client
+      .index(MATERIALS_INDEX)
+      .search(query, searchParams);
 
-    const results = await client.index(MATERIALS_INDEX).search(query, searchParams);
-
-    logger.debug('Search completed', {
+    logger.debug("Search completed", {
       query,
       hits: results.hits.length,
       estimatedTotalHits: results.estimatedTotalHits,
@@ -255,7 +260,7 @@ export async function searchMaterials(
 
     return results;
   } catch (error) {
-    logger.error('Search failed', error, { query, filters });
+    logger.error("Search failed", error, { query, filters });
     throw error;
   }
 }
@@ -265,15 +270,15 @@ export async function getSearchSuggestions(query: string, limit: number = 5) {
   try {
     const results = await client.index(MATERIALS_INDEX).search(query, {
       limit,
-      attributesToRetrieve: ['id', 'title'],
+      attributesToRetrieve: ["id", "title"],
     });
 
-    return results.hits.map((hit: any) => ({
+    return results.hits.map((hit) => ({
       id: hit.id,
       title: hit.title,
     }));
   } catch (error) {
-    logger.error('Failed to get search suggestions', error, { query });
+    logger.error("Failed to get search suggestions", error, { query });
     return [];
   }
 }
@@ -294,9 +299,9 @@ export async function indexProvider(providerId: string) {
     };
 
     await client.index(PROVIDERS_INDEX).addDocuments([document]);
-    logger.debug('Provider indexed', { providerId });
+    logger.debug("Provider indexed", { providerId });
   } catch (error) {
-    logger.error('Failed to index provider', error, { providerId });
+    logger.error("Failed to index provider", error, { providerId });
   }
 }
 
@@ -304,13 +309,13 @@ export async function indexProvider(providerId: string) {
 export async function searchProviders(query: string, limit: number = 20) {
   try {
     const results = await client.index(PROVIDERS_INDEX).search(query, {
-      filter: ['isActive = true'],
+      filter: ["isActive = true"],
       limit,
     });
 
     return results;
   } catch (error) {
-    logger.error('Provider search failed', error, { query });
+    logger.error("Provider search failed", error, { query });
     throw error;
   }
 }
@@ -320,14 +325,14 @@ export async function getSearchStats() {
   try {
     const materialsIndex = client.index(MATERIALS_INDEX);
     const stats = await materialsIndex.getStats();
-    
+
     return {
       numberOfDocuments: stats.numberOfDocuments,
       isIndexing: stats.isIndexing,
       fieldDistribution: stats.fieldDistribution,
     };
   } catch (error) {
-    logger.error('Failed to get search stats', error);
+    logger.error("Failed to get search stats", error);
     return null;
   }
 }

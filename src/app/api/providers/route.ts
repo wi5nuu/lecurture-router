@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
 
     const search = searchParams.get("search") || "";
     const price = searchParams.get("price") || "";
-    const sort = (searchParams.get("sort") || "rating") as ProviderListOptions["sort"];
+    const sort = (searchParams.get("sort") ||
+      "rating") as ProviderListOptions["sort"];
 
     const providers = await listProviders({ search, price, sort });
 
@@ -18,6 +19,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
     console.error("Failed to list providers:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

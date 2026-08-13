@@ -1,13 +1,13 @@
-import { PrismaClient } from '../src/generated/prisma';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from "../src/generated/prisma";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function seed() {
-  console.log('Seeding database...');
+  console.log("Seeding database...");
 
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@lecturerouter.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123!';
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@lecturerouter.com";
+  const adminPassword = process.env.ADMIN_PASSWORD || "Admin123!";
 
   const existing = await prisma.user.findUnique({
     where: { email: adminEmail },
@@ -19,9 +19,9 @@ async function seed() {
       data: {
         email: adminEmail,
         password: hashedPassword,
-        firstName: 'Admin',
-        lastName: 'LectureRouter',
-        role: 'ADMIN',
+        firstName: "Admin",
+        lastName: "LectureRouter",
+        role: "ADMIN",
         emailVerified: true,
         emailVerifiedAt: new Date(),
         isActive: true,
@@ -32,16 +32,18 @@ async function seed() {
     console.log(`Admin user already exists: ${adminEmail}`);
   }
 
-  console.log('');
-  console.log('Seeding complete!');
-  console.log('');
-  console.log('NOTE: Materials, providers, and categories now live in Firebase Firestore.');
-  console.log('      Seed the catalog with:  npm run firebase:seed');
+  console.log("");
+  console.log("Seeding complete!");
+  console.log("");
+  console.log(
+    "NOTE: Materials, providers, and categories now live in Firebase Firestore.",
+  );
+  console.log("      Seed the catalog with:  npm run firebase:seed");
 }
 
 seed()
   .catch((e) => {
-    console.error('Seed failed:', e);
+    console.error("Seed failed:", e);
     process.exit(1);
   })
   .finally(async () => {

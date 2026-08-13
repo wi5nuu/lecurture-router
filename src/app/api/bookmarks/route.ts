@@ -24,11 +24,9 @@ export async function GET(request: NextRequest) {
     });
 
     const firestoreMaterials = await getMaterialsByIds(
-      bookmarks.map((b) => b.materialId)
+      bookmarks.map((b) => b.materialId),
     );
-    const materialMap = new Map(
-      firestoreMaterials.map((m) => [m.id, m])
-    );
+    const materialMap = new Map(firestoreMaterials.map((m) => [m.id, m]));
 
     const formattedBookmarks = bookmarks.map((b) => ({
       id: b.id,
@@ -43,7 +41,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
     console.error("Failed to list bookmarks:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -56,12 +57,18 @@ export async function POST(request: NextRequest) {
 
     const { materialId } = await request.json();
     if (!materialId) {
-      return NextResponse.json({ error: "materialId wajib diisi" }, { status: 400 });
+      return NextResponse.json(
+        { error: "materialId wajib diisi" },
+        { status: 400 },
+      );
     }
 
     const material = await getMaterialById(materialId);
     if (!material) {
-      return NextResponse.json({ error: "Material not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Material not found" },
+        { status: 404 },
+      );
     }
 
     const existing = await prisma.bookmark.findUnique({
@@ -73,7 +80,10 @@ export async function POST(request: NextRequest) {
       },
     });
     if (existing) {
-      return NextResponse.json({ error: "Already bookmarked" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Already bookmarked" },
+        { status: 409 },
+      );
     }
 
     const newBookmark = await prisma.bookmark.create({
@@ -83,12 +93,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ id: newBookmark.id, materialId }, { status: 201 });
+    return NextResponse.json(
+      { id: newBookmark.id, materialId },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof FirebaseNotConfiguredError) {
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
     console.error("Failed to create bookmark:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

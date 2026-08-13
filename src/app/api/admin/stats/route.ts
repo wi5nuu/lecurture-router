@@ -1,8 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { authMiddleware, requireRole, addSecurityHeaders } from '@/lib/middleware';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
-import { countMaterials, countProviders, getMaterialsByIds } from '@/lib/firestore';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import {
+  authMiddleware,
+  requireRole,
+  addSecurityHeaders,
+} from "@/lib/middleware";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
+import {
+  countMaterials,
+  countProviders,
+  getMaterialsByIds,
+} from "@/lib/firestore";
 
 // GET /api/admin/stats - Get admin dashboard statistics
 export async function GET(request: NextRequest) {
@@ -12,14 +24,17 @@ export async function GET(request: NextRequest) {
       return authResult.response!;
     }
 
-    const roleCheck = await requireRole(['ADMIN', 'MODERATOR'])(request, authResult.user);
+    const roleCheck = await requireRole(["ADMIN", "MODERATOR"])(
+      request,
+      authResult.user,
+    );
     if (!roleCheck.authorized) {
       return roleCheck.response!;
     }
 
     // Get date range from query params
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get('days') || '30');
+    const days = parseInt(searchParams.get("days") || "30");
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -79,14 +94,14 @@ export async function GET(request: NextRequest) {
 
       // Subscription statistics
       prisma.subscription.groupBy({
-        by: ['plan', 'status'],
+        by: ["plan", "status"],
         _count: true,
       }),
 
       // Revenue statistics (from invoices)
       prisma.invoice.aggregate({
         where: {
-          status: 'paid',
+          status: "paid",
           createdAt: {
             gte: startDate,
           },
@@ -100,7 +115,7 @@ export async function GET(request: NextRequest) {
       // Recent users
       prisma.user.findMany({
         take: 10,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         select: {
           id: true,
           email: true,
@@ -116,28 +131,28 @@ export async function GET(request: NextRequest) {
       // Top bookmarked materials (bookmarks in Postgres, material data in Firestore)
       async () => {
         const topBookmarks = await prisma.bookmark.groupBy({
-          by: ['materialId'],
+          by: ["materialId"],
           _count: {
             materialId: true,
           },
           orderBy: {
             _count: {
-              materialId: 'desc',
+              materialId: "desc",
             },
           },
           take: 10,
         });
 
         const materials = await getMaterialsByIds(
-          topBookmarks.map((b) => b.materialId)
+          topBookmarks.map((b) => b.materialId),
         );
         const materialMap = new Map(materials.map((m) => [m.id, m]));
 
         return topBookmarks.map((b) => ({
           id: b.materialId,
-          title: materialMap.get(b.materialId)?.title ?? 'Unknown',
+          title: materialMap.get(b.materialId)?.title ?? "Unknown",
           providerName:
-            materialMap.get(b.materialId)?.providerName ?? 'Unknown',
+            materialMap.get(b.materialId)?.providerName ?? "Unknown",
           _count: { bookmarks: b._count.materialId },
         }));
       },
@@ -157,8 +172,10 @@ export async function GET(request: NextRequest) {
     const subscriptionByStatus: Record<string, number> = {};
 
     subscriptionStats.forEach((stat) => {
-      subscriptionByPlan[stat.plan] = (subscriptionByPlan[stat.plan] || 0) + stat._count;
-      subscriptionByStatus[stat.status] = (subscriptionByStatus[stat.status] || 0) + stat._count;
+      subscriptionByPlan[stat.plan] =
+        (subscriptionByPlan[stat.plan] || 0) + stat._count;
+      subscriptionByStatus[stat.status] =
+        (subscriptionByStatus[stat.status] || 0) + stat._count;
     });
 
     const stats = {
@@ -185,15 +202,15 @@ export async function GET(request: NextRequest) {
       userGrowth,
     };
 
-    logger.info('Admin stats fetched', { adminId: authResult.user.userId });
+    logger.info("Admin stats fetched", { adminId: authResult.user.userId });
 
     const response = NextResponse.json(createSuccessResponse(stats));
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Failed to fetch admin stats', error);
+    logger.error("Failed to fetch admin stats", error);
     return NextResponse.json(
-      createErrorResponse('Failed to fetch admin stats', 500, error),
-      { status: 500 }
+      createErrorResponse("Failed to fetch admin stats", 500, error),
+      { status: 500 },
     );
   }
 }

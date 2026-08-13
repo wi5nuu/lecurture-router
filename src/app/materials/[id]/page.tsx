@@ -11,7 +11,7 @@ interface Props {
 }
 
 async function fetchMaterial(
-  id: string
+  id: string,
 ): Promise<{ material: Material; related: Material[] } | null> {
   if (isFirebaseConfigured()) {
     try {
@@ -51,9 +51,6 @@ export default async function MaterialDetailPage({ params }: Props) {
   const result = await fetchMaterial(id);
   if (!result) notFound();
   return (
-    <MaterialDetailClient
-      material={result.material}
-      related={result.related}
-    />
+    <MaterialDetailClient material={result.material} related={result.related} />
   );
 }

@@ -3,9 +3,18 @@
 import { motion } from "framer-motion";
 
 const sources = [
-  "MIT OCW", "Coursera", "edX", "ResearchGate",
-  "Google Scholar", "Khan Academy", "Academia.edu",
-  "Udemy", "IEEE", "Springer", "JSTOR", "YouTube Edu",
+  "MIT OCW",
+  "Coursera",
+  "edX",
+  "ResearchGate",
+  "Google Scholar",
+  "Khan Academy",
+  "Academia.edu",
+  "Udemy",
+  "IEEE",
+  "Springer",
+  "JSTOR",
+  "YouTube Edu",
 ];
 
 export function TrustedSources() {

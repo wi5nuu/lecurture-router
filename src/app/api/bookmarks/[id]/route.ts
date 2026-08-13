@@ -4,7 +4,7 @@ import { verifyToken } from "@/lib/auth";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -18,24 +18,29 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    
     const bookmark = await prisma.bookmark.findFirst({
       where: {
         id,
-        userId: payload.userId
-      }
+        userId: payload.userId,
+      },
     });
 
     if (!bookmark) {
-      return NextResponse.json({ error: "Bookmark not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Bookmark not found" },
+        { status: 404 },
+      );
     }
 
     await prisma.bookmark.delete({
-      where: { id }
+      where: { id },
     });
 
     return NextResponse.json({ message: "Bookmark removed" });
   } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

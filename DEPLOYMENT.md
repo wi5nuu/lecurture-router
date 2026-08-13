@@ -3,6 +3,7 @@
 ## 🚀 Deployment Checklist
 
 ### ✅ Yang Sudah Selesai
+
 - [x] Aplikasi di-deploy ke Netlify
 - [x] Database schema lengkap dengan 12+ models
 - [x] Authentication system dengan JWT & refresh tokens
@@ -21,6 +22,7 @@
 Netlify tidak menyediakan database. Anda perlu setup database eksternal:
 
 **Pilihan A: Neon (Recommended for Free Tier)**
+
 ```bash
 # 1. Buat account di https://neon.tech
 # 2. Create new project
@@ -30,6 +32,7 @@ DATABASE_URL="postgresql://user:pass@hostname.neon.tech/dbname?sslmode=require"
 ```
 
 **Pilihan B: Supabase**
+
 ```bash
 # 1. Buat account di https://supabase.com
 # 2. Create new project
@@ -39,6 +42,7 @@ DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co
 ```
 
 **Pilihan C: Railway**
+
 ```bash
 # 1. Buat account di https://railway.app
 # 2. New Project > Provision PostgreSQL
@@ -46,6 +50,7 @@ DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co
 ```
 
 **Pilihan D: Render**
+
 ```bash
 # 1. Buat account di https://render.com
 # 2. New PostgreSQL Database
@@ -55,6 +60,7 @@ DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co
 #### 2. Redis (Prioritas Tinggi)
 
 **Pilihan A: Upstash (Recommended - Free Tier)**
+
 ```bash
 # 1. Buat account di https://upstash.com
 # 2. Create Redis Database
@@ -63,6 +69,7 @@ REDIS_URL="redis://default:[PASSWORD]@[HOSTNAME]:6379"
 ```
 
 **Pilihan B: Redis Cloud**
+
 ```bash
 # https://redis.com/try-free
 ```
@@ -70,6 +77,7 @@ REDIS_URL="redis://default:[PASSWORD]@[HOSTNAME]:6379"
 #### 3. Meilisearch
 
 **Pilihan A: Meilisearch Cloud**
+
 ```bash
 # 1. https://meilisearch.com/cloud
 # 2. Create project
@@ -79,6 +87,7 @@ MEILISEARCH_MASTER_KEY="[YOUR-MASTER-KEY]"
 ```
 
 **Pilihan B: Self-hosted di Railway/Render**
+
 ```bash
 # Deploy Meilisearch container
 ```
@@ -86,6 +95,7 @@ MEILISEARCH_MASTER_KEY="[YOUR-MASTER-KEY]"
 #### 4. WebSocket Server
 
 **Pilihan A: Deploy ke Railway**
+
 ```bash
 # 1. Push code ke GitHub
 # 2. https://railway.app
@@ -96,6 +106,7 @@ MEILISEARCH_MASTER_KEY="[YOUR-MASTER-KEY]"
 ```
 
 **Pilihan B: Deploy ke Render**
+
 ```bash
 # 1. https://render.com
 # 2. New Web Service
@@ -181,6 +192,7 @@ npm run firebase:seed
 Masuk ke Netlify Dashboard > Site settings > Environment variables
 
 ### Critical Variables (Required)
+
 ```bash
 # Database
 DATABASE_URL="postgresql://..."
@@ -230,6 +242,7 @@ NEXT_PUBLIC_WS_URL="wss://your-websocket-server.railway.app"
 ```
 
 ### Optional Variables
+
 ```bash
 # Sentry
 SENTRY_DSN="https://..."
@@ -293,18 +306,21 @@ Setelah Meilisearch ready:
 ## 🌐 Custom Domain Setup
 
 ### Netlify Custom Domain
+
 1. Site settings > Domain management
 2. Add custom domain
 3. Update DNS records di domain provider
 4. Enable HTTPS (automatic)
 
 ### Update Environment Variables
+
 ```bash
 NEXT_PUBLIC_APP_URL="https://yourdomain.com"
 NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ```
 
 ### Update Stripe Webhook URL
+
 ```bash
 # Stripe Dashboard > Webhooks
 # Update URL ke: https://yourdomain.com/api/webhooks/stripe
@@ -315,6 +331,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ## ✅ Post-Deployment Checklist
 
 ### 1. Test Authentication
+
 - [ ] Register new user
 - [ ] Verify email received
 - [ ] Login works
@@ -322,6 +339,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 - [ ] Password reset works
 
 ### 2. Test Subscription
+
 - [ ] Checkout flow works
 - [ ] Payment successful
 - [ ] Subscription activated
@@ -329,28 +347,33 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 - [ ] Webhook received
 
 ### 3. Test Search
+
 - [ ] Search returns results
 - [ ] Filters work
 - [ ] Autocomplete works
 
 ### 4. Test Realtime
+
 - [ ] WebSocket connects
 - [ ] Notifications received
 - [ ] Real-time updates work
 
 ### 5. Test Admin
+
 - [ ] Admin login works
 - [ ] Dashboard loads
 - [ ] User management works
 - [ ] Statistics display
 
 ### 6. Test Performance
+
 - [ ] Page load < 3s
 - [ ] API response < 500ms
 - [ ] Database queries optimized
 - [ ] Redis caching works
 
 ### 7. Security Check
+
 - [ ] HTTPS enabled
 - [ ] Security headers set
 - [ ] Rate limiting works
@@ -362,6 +385,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ## 🐛 Troubleshooting
 
 ### Database Connection Error
+
 ```bash
 # Check DATABASE_URL format
 # Ensure SSL mode: ?sslmode=require
@@ -369,6 +393,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ```
 
 ### Redis Connection Error
+
 ```bash
 # Verify REDIS_URL
 # Check authentication
@@ -376,6 +401,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ```
 
 ### Stripe Webhook Failed
+
 ```bash
 # Verify webhook secret
 # Check endpoint URL is public
@@ -384,6 +410,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ```
 
 ### Email Not Sending
+
 ```bash
 # Verify Resend API key
 # Check domain verification
@@ -392,6 +419,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ```
 
 ### WebSocket Not Connecting
+
 ```bash
 # Verify WS_PORT and NEXT_PUBLIC_WS_URL
 # Check CORS configuration
@@ -404,17 +432,20 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ## 📊 Monitoring & Maintenance
 
 ### Daily Tasks
+
 - Check Sentry for errors
 - Review Stripe dashboard
 - Monitor database usage
 
 ### Weekly Tasks
+
 - Review audit logs
 - Check subscription metrics
 - Analyze search queries
 - Review user growth
 
 ### Monthly Tasks
+
 - Database backup
 - Update dependencies
 - Security audit
@@ -425,16 +456,19 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ## 🚀 Scaling Considerations
 
 ### When to Scale Database
+
 - Connection pool exhausted
 - Query performance degrading
 - Storage > 80%
 
 ### When to Scale Redis
+
 - Memory usage > 80%
 - Evictions happening
 - Connection limits reached
 
 ### When to Add Load Balancer
+
 - Traffic > 10k req/hour
 - Multiple regions needed
 - High availability required
@@ -444,6 +478,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ## 💰 Cost Estimation (Monthly)
 
 ### Minimum (Free Tier)
+
 - Netlify: $0 (Free tier)
 - Neon PostgreSQL: $0 (Free tier, 0.5GB)
 - Upstash Redis: $0 (Free tier, 10k commands/day)
@@ -453,6 +488,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 **Total: ~$5/month**
 
 ### Production (Starter)
+
 - Netlify: $0-19 (Pro if needed)
 - Neon: $19 (Launch tier)
 - Upstash: $10 (Pay-as-you-go)
@@ -462,6 +498,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 **Total: ~$88/month**
 
 ### Production (Growth)
+
 - Netlify: $19 (Pro)
 - Supabase: $25 (Pro)
 - Upstash: $30
@@ -475,6 +512,7 @@ NEXT_PUBLIC_API_URL="https://yourdomain.com/api"
 ## 📞 Support
 
 Jika ada masalah:
+
 1. Check logs di Netlify Dashboard
 2. Check Sentry untuk errors
 3. Review Stripe webhook logs

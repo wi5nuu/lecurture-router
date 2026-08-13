@@ -7,7 +7,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "12")));
+    const limit = Math.min(
+      50,
+      Math.max(1, parseInt(searchParams.get("limit") || "12")),
+    );
     const search = searchParams.get("search") || "";
     const category = searchParams.get("category") || "";
     const format = searchParams.get("format") || "";
@@ -51,6 +54,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
     console.error("Failed to list materials:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

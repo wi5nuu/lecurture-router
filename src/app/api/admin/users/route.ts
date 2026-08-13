@@ -1,7 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { authMiddleware, requireRole, addSecurityHeaders, auditLog } from '@/lib/middleware';
-import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import type { Prisma, UserRole } from "@/generated/prisma";
+import {
+  authMiddleware,
+  requireRole,
+  addSecurityHeaders,
+  auditLog,
+} from "@/lib/middleware";
+import {
+  logger,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/lib/logger";
 
 // GET /api/admin/users - List all users with pagination
 export async function GET(request: NextRequest) {
@@ -12,39 +22,42 @@ export async function GET(request: NextRequest) {
       return authResult.response!;
     }
 
-    const roleCheck = await requireRole(['ADMIN', 'MODERATOR'])(request, authResult.user);
+    const roleCheck = await requireRole(["ADMIN", "MODERATOR"])(
+      request,
+      authResult.user,
+    );
     if (!roleCheck.authorized) {
       return roleCheck.response!;
     }
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const search = searchParams.get('search') || '';
-    const role = searchParams.get('role') || '';
-    const status = searchParams.get('status') || '';
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
+    const search = searchParams.get("search") || "";
+    const role = searchParams.get("role") || "";
+    const status = searchParams.get("status") || "";
 
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
-    
+    const where: Prisma.UserWhereInput = {};
+
     if (search) {
       where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: "insensitive" } },
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
       ];
     }
 
     if (role) {
-      where.role = role;
+      where.role = role as UserRole;
     }
 
-    if (status === 'active') {
+    if (status === "active") {
       where.isActive = true;
-    } else if (status === 'inactive') {
+    } else if (status === "inactive") {
       where.isActive = false;
     }
 
@@ -77,7 +90,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.user.count({ where }),
     ]);
@@ -85,11 +98,11 @@ export async function GET(request: NextRequest) {
     // Audit log
     await auditLog(
       authResult.user.userId,
-      'LIST_USERS',
-      'User',
+      "LIST_USERS",
+      "User",
       undefined,
       request,
-      { page, limit, search, total }
+      { page, limit, search, total },
     );
 
     const response = NextResponse.json(
@@ -101,15 +114,15 @@ export async function GET(request: NextRequest) {
           total,
           totalPages: Math.ceil(total / limit),
         },
-      })
+      }),
     );
 
     return addSecurityHeaders(response);
   } catch (error) {
-    logger.error('Failed to list users', error);
+    logger.error("Failed to list users", error);
     return NextResponse.json(
-      createErrorResponse('Failed to list users', 500, error),
-      { status: 500 }
+      createErrorResponse("Failed to list users", 500, error),
+      { status: 500 },
     );
   }
 }

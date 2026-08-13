@@ -3,7 +3,11 @@ import {
   type DocumentData,
   type Query,
 } from "firebase-admin/firestore";
-import { getDb, isFirebaseConfigured, FirebaseNotConfiguredError } from "./firebase";
+import {
+  getDb,
+  isFirebaseConfigured,
+  FirebaseNotConfiguredError,
+} from "./firebase";
 
 const COLLECTION_MATERIALS = "materials";
 const COLLECTION_PROVIDERS = "providers";
@@ -66,7 +70,7 @@ export interface FirestoreMaterial {
   instructor: string;
   university: string;
   citations: number;
-tags: string[];
+  tags: string[];
   thumbnail?: string | null;
   pages?: number | null;
   duration?: string | null;
@@ -80,12 +84,7 @@ tags: string[];
 }
 
 export type MaterialListSort =
-  | "rating"
-  | "newest"
-  | "oldest"
-  | "title"
-  | "reviews"
-  | "citations";
+  "rating" | "newest" | "oldest" | "title" | "reviews" | "citations";
 
 export interface MaterialListOptions {
   page?: number;
@@ -117,7 +116,10 @@ function requireFirestore() {
   return getDb();
 }
 
-function docToData<T extends { id: string }>(id: string, data: DocumentData): T {
+function docToData<T extends { id: string }>(
+  id: string,
+  data: DocumentData,
+): T {
   return { id, ...data } as T;
 }
 
@@ -130,7 +132,7 @@ function withTimestamps<T extends object>(data: T) {
 }
 
 export async function listMaterials(
-  options: MaterialListOptions = {}
+  options: MaterialListOptions = {},
 ): Promise<MaterialListResult> {
   const db = requireFirestore();
   const page = Math.max(1, options.page ?? 1);
@@ -139,16 +141,19 @@ export async function listMaterials(
 
   let query: Query = db.collection(COLLECTION_MATERIALS);
 
-  if (options.category) query = query.where("categoryId", "==", options.category);
+  if (options.category)
+    query = query.where("categoryId", "==", options.category);
   if (options.format) query = query.where("format", "==", options.format);
   if (options.level) query = query.where("level", "==", options.level);
   if (options.price) query = query.where("price", "==", options.price);
-  if (options.provider) query = query.where("providerId", "==", options.provider);
-  if (!options.includeUnpublished) query = query.where("isPublished", "==", true);
+  if (options.provider)
+    query = query.where("providerId", "==", options.provider);
+  if (!options.includeUnpublished)
+    query = query.where("isPublished", "==", true);
 
   const snapshot = await query.limit(MAX_SCAN_DOCS).get();
   const all = snapshot.docs.map((doc) =>
-    docToData<FirestoreMaterial>(doc.id, doc.data())
+    docToData<FirestoreMaterial>(doc.id, doc.data()),
   );
 
   const searchTerm = options.search?.trim().toLowerCase();
@@ -159,7 +164,7 @@ export async function listMaterials(
         m.title.toLowerCase().includes(searchTerm) ||
         m.description.toLowerCase().includes(searchTerm) ||
         m.instructor.toLowerCase().includes(searchTerm) ||
-        m.tags.some((tag) => tag.toLowerCase().includes(searchTerm))
+        m.tags.some((tag) => tag.toLowerCase().includes(searchTerm)),
     );
   }
 
@@ -196,7 +201,7 @@ export async function listMaterials(
 }
 
 export async function getMaterialById(
-  id: string
+  id: string,
 ): Promise<FirestoreMaterial | null> {
   const db = requireFirestore();
   const doc = await db.collection(COLLECTION_MATERIALS).doc(id).get();
@@ -206,8 +211,11 @@ export async function getMaterialById(
 
 export async function getMaterialWithRelated(
   id: string,
-  relatedLimit = 6
-): Promise<{ material: FirestoreMaterial; related: FirestoreMaterial[] } | null> {
+  relatedLimit = 6,
+): Promise<{
+  material: FirestoreMaterial;
+  related: FirestoreMaterial[];
+} | null> {
   const material = await getMaterialById(id);
   if (!material) return null;
 
@@ -229,7 +237,7 @@ export async function getMaterialWithRelated(
 }
 
 export async function getMaterialsByIds(
-  ids: string[]
+  ids: string[],
 ): Promise<FirestoreMaterial[]> {
   if (ids.length === 0) return [];
   const db = requireFirestore();
@@ -245,8 +253,8 @@ export async function getMaterialsByIds(
       .get();
     results.push(
       ...snapshot.docs.map((doc) =>
-        docToData<FirestoreMaterial>(doc.id, doc.data())
-      )
+        docToData<FirestoreMaterial>(doc.id, doc.data()),
+      ),
     );
   }
 
@@ -257,7 +265,7 @@ export async function getAllMaterials(): Promise<FirestoreMaterial[]> {
   const db = requireFirestore();
   const snapshot = await db.collection(COLLECTION_MATERIALS).get();
   return snapshot.docs.map((doc) =>
-    docToData<FirestoreMaterial>(doc.id, doc.data())
+    docToData<FirestoreMaterial>(doc.id, doc.data()),
   );
 }
 
@@ -268,7 +276,7 @@ export async function countMaterials(): Promise<number> {
 }
 
 export async function getMaterialsByProvider(
-  providerId: string
+  providerId: string,
 ): Promise<FirestoreMaterial[]> {
   const db = requireFirestore();
   const snapshot = await db
@@ -318,7 +326,7 @@ export interface MaterialMutationResult {
 
 export async function createMaterial(
   id: string | undefined,
-  input: MaterialInput
+  input: MaterialInput,
 ): Promise<MaterialMutationResult> {
   const db = requireFirestore();
   const docRef = id
@@ -367,7 +375,7 @@ export async function createMaterial(
 
 export async function updateMaterial(
   id: string,
-  input: Partial<MaterialInput>
+  input: Partial<MaterialInput>,
 ): Promise<FirestoreMaterial | null> {
   const db = requireFirestore();
   const docRef = db.collection(COLLECTION_MATERIALS).doc(id);
@@ -406,7 +414,7 @@ export async function listCategories(): Promise<FirestoreCategory[]> {
 }
 
 export async function getCategoryById(
-  id: string
+  id: string,
 ): Promise<FirestoreCategory | null> {
   const db = requireFirestore();
   const doc = await db.collection(COLLECTION_CATEGORIES).doc(id).get();
@@ -426,7 +434,7 @@ export interface CategoryInput {
 
 export async function createCategory(
   id: string | undefined,
-  input: CategoryInput
+  input: CategoryInput,
 ): Promise<FirestoreCategory> {
   const db = requireFirestore();
   const docRef = id
@@ -439,8 +447,7 @@ export async function createCategory(
     materialCount: input.materialCount ?? 0,
     description: input.description,
     color: input.color,
-    slug:
-      input.slug ?? input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    slug: input.slug ?? input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     isActive: input.isActive ?? true,
   });
 
@@ -455,12 +462,12 @@ export interface ProviderListOptions {
 }
 
 export async function listProviders(
-  options: ProviderListOptions = {}
+  options: ProviderListOptions = {},
 ): Promise<FirestoreProvider[]> {
   const db = requireFirestore();
   const snapshot = await db.collection(COLLECTION_PROVIDERS).get();
   let providers = snapshot.docs.map((doc) =>
-    docToData<FirestoreProvider>(doc.id, doc.data())
+    docToData<FirestoreProvider>(doc.id, doc.data()),
   );
 
   const searchTerm = options.search?.trim().toLowerCase();
@@ -468,7 +475,7 @@ export async function listProviders(
     providers = providers.filter(
       (p) =>
         p.name.toLowerCase().includes(searchTerm) ||
-        p.description.toLowerCase().includes(searchTerm)
+        p.description.toLowerCase().includes(searchTerm),
     );
   }
   if (options.price) {
@@ -493,7 +500,7 @@ export async function listProviders(
 }
 
 export async function getProviderById(
-  id: string
+  id: string,
 ): Promise<FirestoreProvider | null> {
   const db = requireFirestore();
   const doc = await db.collection(COLLECTION_PROVIDERS).doc(id).get();
@@ -501,9 +508,10 @@ export async function getProviderById(
   return docToData<FirestoreProvider>(doc.id, doc.data()!);
 }
 
-export async function getProviderWithMaterials(
-  id: string
-): Promise<{ provider: FirestoreProvider; materials: FirestoreMaterial[] } | null> {
+export async function getProviderWithMaterials(id: string): Promise<{
+  provider: FirestoreProvider;
+  materials: FirestoreMaterial[];
+} | null> {
   const provider = await getProviderById(id);
   if (!provider) return null;
   const materials = await getMaterialsByProvider(id);
@@ -528,7 +536,7 @@ export interface ProviderInput {
 
 export async function createProvider(
   id: string | undefined,
-  input: ProviderInput
+  input: ProviderInput,
 ): Promise<FirestoreProvider> {
   const db = requireFirestore();
   const docRef = id
@@ -557,7 +565,7 @@ export async function createProvider(
 
 export async function updateProvider(
   id: string,
-  input: Partial<ProviderInput>
+  input: Partial<ProviderInput>,
 ): Promise<FirestoreProvider | null> {
   const db = requireFirestore();
   const docRef = db.collection(COLLECTION_PROVIDERS).doc(id);

@@ -5,6 +5,7 @@
 ### Step 1: Database Setup (5 min)
 
 **Option A: Neon (Recommended)**
+
 1. Go to https://neon.tech
 2. Sign up with GitHub
 3. Create new project: "lecture-router"
@@ -17,6 +18,7 @@ DATABASE_URL="postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmo
 ```
 
 **Option B: Supabase**
+
 1. Go to https://supabase.com
 2. New project
 3. Settings > Database > Connection string
@@ -27,6 +29,7 @@ DATABASE_URL="postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmo
 ### Step 2: Redis Setup (3 min)
 
 **Upstash Redis (Free Tier)**
+
 1. Go to https://upstash.com
 2. Create account
 3. Create Redis Database
@@ -41,6 +44,7 @@ REDIS_URL="redis://default:xxx@xxx.upstash.io:6379"
 ### Step 3: Email Setup (2 min)
 
 **Resend (Free 3k emails/month)**
+
 1. Go to https://resend.com
 2. Sign up
 3. API Keys > Create
@@ -116,6 +120,7 @@ npm run prisma:seed
 ### Step 6: Deploy! 🚀
 
 **Trigger Redeploy in Netlify:**
+
 1. Netlify Dashboard > Deploys
 2. Click "Trigger deploy" > "Deploy site"
 3. Wait 2-3 minutes
@@ -126,23 +131,29 @@ npm run prisma:seed
 ## ✅ Test Your Deployment
 
 ### 1. Test Registration
+
 ```
 https://your-site.netlify.app/register
 ```
+
 - Create account
 - Check email for verification
 
 ### 2. Test Login
+
 ```
 https://your-site.netlify.app/login
 ```
+
 - Login with credentials
 - Should redirect to dashboard
 
 ### 3. Test API
+
 ```
 https://your-site.netlify.app/api/health
 ```
+
 - Should return 200 OK
 
 ---
@@ -159,7 +170,7 @@ With this minimal setup, you have:
 ✅ Security headers  
 ✅ Database with all models  
 ✅ Redis caching  
-✅ Audit logging  
+✅ Audit logging
 
 ---
 
@@ -168,34 +179,38 @@ With this minimal setup, you have:
 ❌ **Stripe Payments** - Need to setup Stripe account  
 ❌ **Search** - Need Meilisearch instance  
 ❌ **WebSocket** - Need separate WebSocket server  
-❌ **Custom Domain** - Using .netlify.app subdomain  
+❌ **Custom Domain** - Using .netlify.app subdomain
 
 ---
 
 ## 🚀 Next Steps (Do Later)
 
 ### Enable Payments (30 min)
+
 1. Create Stripe account
 2. Get API keys
 3. Create products & prices
 4. Setup webhook
 5. Update environment variables
-See: DEPLOYMENT.md > Stripe Configuration
+   See: DEPLOYMENT.md > Stripe Configuration
 
 ### Enable Search (15 min)
+
 1. Deploy Meilisearch to Railway
 2. Get host URL and master key
 3. Update environment variables
 4. Run search index initialization
-See: DEPLOYMENT.md > Meilisearch
+   See: DEPLOYMENT.md > Meilisearch
 
 ### Enable WebSocket (20 min)
+
 1. Deploy WebSocket server to Railway/Render
 2. Get WebSocket URL
 3. Update NEXT_PUBLIC_WS_URL
-See: DEPLOYMENT.md > WebSocket Server
+   See: DEPLOYMENT.md > WebSocket Server
 
 ### Custom Domain (10 min)
+
 1. Netlify: Domain management
 2. Add your domain
 3. Update DNS records
@@ -206,6 +221,7 @@ See: DEPLOYMENT.md > WebSocket Server
 ## 💡 Pro Tips
 
 ### Generate Strong JWT Secrets
+
 ```bash
 # On Mac/Linux:
 openssl rand -hex 32
@@ -218,12 +234,14 @@ https://generate-secret.vercel.app/32
 ```
 
 ### Check Logs
+
 ```bash
 # Netlify Dashboard > Functions
 # Look for errors in serverless function logs
 ```
 
 ### Force Redeploy
+
 ```bash
 # If changes not reflecting:
 # Netlify > Deploys > Trigger deploy > Clear cache and deploy
@@ -234,6 +252,7 @@ https://generate-secret.vercel.app/32
 ## 🆘 Common Issues
 
 ### "Cannot connect to database"
+
 ```bash
 # Check DATABASE_URL is correct
 # Ensure ?sslmode=require is at the end
@@ -241,6 +260,7 @@ https://generate-secret.vercel.app/32
 ```
 
 ### "Redis connection failed"
+
 ```bash
 # Verify REDIS_URL format
 # Check Upstash dashboard for correct URL
@@ -248,6 +268,7 @@ https://generate-secret.vercel.app/32
 ```
 
 ### "Email not sending"
+
 ```bash
 # Check Resend API key is correct
 # Verify EMAIL_FROM domain
@@ -255,6 +276,7 @@ https://generate-secret.vercel.app/32
 ```
 
 ### "JWT token invalid"
+
 ```bash
 # Ensure JWT_SECRET is set
 # Check it's at least 32 characters
@@ -268,33 +290,34 @@ https://generate-secret.vercel.app/32
 Create this file to check system health:
 
 **src/app/api/health/route.ts:**
+
 ```typescript
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { getRedisClient } from '@/lib/redis';
+import { NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { getRedisClient } from "@/lib/redis";
 
 export async function GET() {
   try {
     // Check database
     await prisma.$queryRaw`SELECT 1`;
-    
+
     // Check Redis
     const redis = getRedisClient();
     await redis.ping();
-    
+
     return NextResponse.json({
-      status: 'healthy',
-      database: 'connected',
-      redis: 'connected',
+      status: "healthy",
+      database: "connected",
+      redis: "connected",
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     return NextResponse.json(
       {
-        status: 'unhealthy',
+        status: "unhealthy",
         error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -307,6 +330,7 @@ Visit: `https://your-site.netlify.app/api/health`
 ## 🎉 You're Done!
 
 Your SaaS is now live with:
+
 - Authentication system
 - Email verification
 - Database

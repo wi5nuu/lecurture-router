@@ -2,26 +2,39 @@
 
 import { motion } from "framer-motion";
 import {
-  Settings, HeartPulse, TrendingUp, Scale, FlaskConical,
-  Users, BookOpen, Monitor, GraduationCap, Palette,
-  Sprout, Compass,
+  Settings,
+  HeartPulse,
+  TrendingUp,
+  Scale,
+  FlaskConical,
+  Users,
+  BookOpen,
+  Monitor,
+  GraduationCap,
+  Palette,
+  Sprout,
+  Compass,
 } from "lucide-react";
-import { AnimatedSection, AnimatedStagger, AnimatedItem } from "@/components/shared/animated-section";
+import {
+  AnimatedSection,
+  AnimatedStagger,
+  AnimatedItem,
+} from "@/components/shared/animated-section";
 import { categories, type Category } from "@/lib/data";
 
 const iconMap: Record<string, React.ReactNode> = {
-  "settings": <Settings className="h-6 w-6" />,
+  settings: <Settings className="h-6 w-6" />,
   "heart-pulse": <HeartPulse className="h-6 w-6" />,
   "trending-up": <TrendingUp className="h-6 w-6" />,
-  "scale": <Scale className="h-6 w-6" />,
+  scale: <Scale className="h-6 w-6" />,
   "flask-conical": <FlaskConical className="h-6 w-6" />,
-  "users": <Users className="h-6 w-6" />,
+  users: <Users className="h-6 w-6" />,
   "book-open": <BookOpen className="h-6 w-6" />,
-  "monitor": <Monitor className="h-6 w-6" />,
+  monitor: <Monitor className="h-6 w-6" />,
   "graduation-cap": <GraduationCap className="h-6 w-6" />,
-  "palette": <Palette className="h-6 w-6" />,
-  "sprout": <Sprout className="h-6 w-6" />,
-  "compass": <Compass className="h-6 w-6" />,
+  palette: <Palette className="h-6 w-6" />,
+  sprout: <Sprout className="h-6 w-6" />,
+  compass: <Compass className="h-6 w-6" />,
 };
 
 const colorMap: Record<string, string> = {
@@ -59,7 +72,9 @@ export function Categories() {
                 whileHover={{ y: -4 }}
                 className="group flex flex-col items-center p-6 rounded-xl border border-border bg-card hover:shadow-lg transition-all duration-300 text-center"
               >
-                <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl border ${colorMap[cat.color]} transition-transform group-hover:scale-110`}>
+                <div
+                  className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl border ${colorMap[cat.color]} transition-transform group-hover:scale-110`}
+                >
                   {iconMap[cat.icon]}
                 </div>
                 <h3 className="text-sm font-semibold mb-1 group-hover:text-blue transition-colors">

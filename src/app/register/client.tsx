@@ -2,7 +2,15 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, GraduationCap } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  GraduationCap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +30,8 @@ export function RegisterClient() {
     const next: Record<string, string> = {};
     if (!firstName) next.firstName = "Nama depan wajib diisi";
     if (!email) next.email = "Email wajib diisi";
-    else if (!/\S+@\S+\.\S+/.test(email)) next.email = "Format email tidak valid";
+    else if (!/\S+@\S+\.\S+/.test(email))
+      next.email = "Format email tidak valid";
     if (!password) next.password = "Password wajib diisi";
     else if (password.length < 8) next.password = "Password minimal 8 karakter";
     setErrors(next);
@@ -39,13 +48,21 @@ export function RegisterClient() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 group mb-6">
             <div className="relative h-10 w-10 overflow-hidden rounded-xl">
-              <Image src="/android-chrome-192x192.png" alt="LectureRouter" width={40} height={40} className="object-cover" />
+              <Image
+                src="/android-chrome-192x192.png"
+                alt="LectureRouter"
+                width={40}
+                height={40}
+                className="object-cover"
+              />
             </div>
             <span className="text-xl font-bold">
               Lecture<span className="text-blue">Router</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight mb-2">Buat Akun Gratis</h1>
+          <h1 className="text-2xl font-bold tracking-tight mb-2">
+            Buat Akun Gratis
+          </h1>
           <p className="text-sm text-muted-foreground">
             Daftar sekarang dan akses jutaan materi kuliah
           </p>
@@ -66,7 +83,9 @@ export function RegisterClient() {
                       onChange={(e) => setFirstName(e.target.value)}
                     />
                   </div>
-                  {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
+                  {errors.firstName && (
+                    <p className="text-xs text-red-500">{errors.firstName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Nama Belakang</label>
@@ -89,7 +108,9 @@ export function RegisterClient() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-xs text-red-500">{errors.email}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Password</label>
@@ -106,10 +127,16 @@ export function RegisterClient() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
-                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+                {errors.password && (
+                  <p className="text-xs text-red-500">{errors.password}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
@@ -127,15 +154,29 @@ export function RegisterClient() {
                 </select>
               </div>
               <div className="flex items-start gap-2">
-                <input type="checkbox" id="terms" className="rounded border-border mt-1" />
-                <label htmlFor="terms" className="text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  className="rounded border-border mt-1"
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-xs text-muted-foreground"
+                >
                   Saya setuju dengan{" "}
-                  <a href="#" className="text-blue hover:underline">Syarat & Ketentuan</a>{" "}
+                  <a href="#" className="text-blue hover:underline">
+                    Syarat & Ketentuan
+                  </a>{" "}
                   dan{" "}
-                  <a href="#" className="text-blue hover:underline">Kebijakan Privasi</a>
+                  <a href="#" className="text-blue hover:underline">
+                    Kebijakan Privasi
+                  </a>
                 </label>
               </div>
-              <Button className="w-full h-12 bg-blue hover:bg-blue-dark gap-2" onClick={validate}>
+              <Button
+                className="w-full h-12 bg-blue hover:bg-blue-dark gap-2"
+                onClick={validate}
+              >
                 Daftar Gratis <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -143,7 +184,10 @@ export function RegisterClient() {
             <div className="mt-6 pt-6 border-t border-border text-center">
               <p className="text-sm text-muted-foreground">
                 Sudah punya akun?{" "}
-                <Link href="/login" className="text-blue font-medium hover:underline">
+                <Link
+                  href="/login"
+                  className="text-blue font-medium hover:underline"
+                >
                   Masuk
                 </Link>
               </p>

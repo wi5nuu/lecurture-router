@@ -1,16 +1,18 @@
-import Stripe from 'stripe';
-import { logger } from './logger';
+import Stripe from "stripe";
+import { logger } from "./logger";
 
 let stripeClient: Stripe | undefined;
 
 function getStripe(): Stripe {
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
+    throw new Error(
+      "STRIPE_SECRET_KEY is not defined in environment variables",
+    );
   }
 
   if (!stripeClient) {
     stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2026-07-29.dahlia',
+      apiVersion: "2026-07-29.dahlia",
       typescript: true,
     });
   }
@@ -21,13 +23,13 @@ function getStripe(): Stripe {
 // Subscription plans configuration
 export const SUBSCRIPTION_PLANS = {
   FREE: {
-    name: 'Free',
+    name: "Free",
     priceMonthly: 0,
     features: [
-      'Access to 1,000 materials',
-      'Basic search',
-      '5 bookmarks',
-      'Email support',
+      "Access to 1,000 materials",
+      "Basic search",
+      "5 bookmarks",
+      "Email support",
     ],
     limits: {
       materials: 1000,
@@ -36,15 +38,15 @@ export const SUBSCRIPTION_PLANS = {
     },
   },
   BASIC: {
-    name: 'Basic',
+    name: "Basic",
     priceMonthly: 9.99,
     stripePriceId: process.env.STRIPE_PRICE_ID_BASIC,
     features: [
-      'Access to 10,000 materials',
-      'Advanced search',
-      'Unlimited bookmarks',
-      'Export materials',
-      'Priority email support',
+      "Access to 10,000 materials",
+      "Advanced search",
+      "Unlimited bookmarks",
+      "Export materials",
+      "Priority email support",
     ],
     limits: {
       materials: 10000,
@@ -53,17 +55,17 @@ export const SUBSCRIPTION_PLANS = {
     },
   },
   PRO: {
-    name: 'Pro',
+    name: "Pro",
     priceMonthly: 29.99,
     stripePriceId: process.env.STRIPE_PRICE_ID_PRO,
     features: [
-      'Access to all materials',
-      'AI-powered search',
-      'Unlimited bookmarks',
-      'Export to multiple formats',
-      'Real-time notifications',
-      'API access',
-      'Priority support',
+      "Access to all materials",
+      "AI-powered search",
+      "Unlimited bookmarks",
+      "Export to multiple formats",
+      "Real-time notifications",
+      "API access",
+      "Priority support",
     ],
     limits: {
       materials: -1, // unlimited
@@ -73,17 +75,17 @@ export const SUBSCRIPTION_PLANS = {
     },
   },
   ENTERPRISE: {
-    name: 'Enterprise',
+    name: "Enterprise",
     priceMonthly: 99.99,
     stripePriceId: process.env.STRIPE_PRICE_ID_ENTERPRISE,
     features: [
-      'Everything in Pro',
-      'Dedicated account manager',
-      'Custom integrations',
-      'White-label options',
-      'SLA guarantee',
-      'Advanced analytics',
-      'Unlimited API access',
+      "Everything in Pro",
+      "Dedicated account manager",
+      "Custom integrations",
+      "White-label options",
+      "SLA guarantee",
+      "Advanced analytics",
+      "Unlimited API access",
     ],
     limits: {
       materials: -1,
@@ -98,7 +100,7 @@ export const SUBSCRIPTION_PLANS = {
 export async function createStripeCustomer(
   email: string,
   userId: string,
-  name?: string
+  name?: string,
 ): Promise<Stripe.Customer> {
   try {
     const customer = await getStripe().customers.create({
@@ -109,10 +111,10 @@ export async function createStripeCustomer(
       },
     });
 
-    logger.info('Stripe customer created', { customerId: customer.id, userId });
+    logger.info("Stripe customer created", { customerId: customer.id, userId });
     return customer;
   } catch (error) {
-    logger.error('Failed to create Stripe customer', error, { userId, email });
+    logger.error("Failed to create Stripe customer", error, { userId, email });
     throw error;
   }
 }
@@ -121,25 +123,28 @@ export async function createStripeCustomer(
 export async function createSubscription(
   customerId: string,
   priceId: string,
-  trialDays?: number
+  trialDays?: number,
 ): Promise<Stripe.Subscription> {
   try {
     const subscription = await getStripe().subscriptions.create({
       customer: customerId,
       items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
+      payment_behavior: "default_incomplete",
+      payment_settings: { save_default_payment_method: "on_subscription" },
+      expand: ["latest_invoice.payment_intent"],
       ...(trialDays ? { trial_period_days: trialDays } : {}),
     });
 
-    logger.info('Stripe subscription created', { 
-      subscriptionId: subscription.id, 
-      customerId 
+    logger.info("Stripe subscription created", {
+      subscriptionId: subscription.id,
+      customerId,
     });
     return subscription;
   } catch (error) {
-    logger.error('Failed to create subscription', error, { customerId, priceId });
+    logger.error("Failed to create subscription", error, {
+      customerId,
+      priceId,
+    });
     throw error;
   }
 }
@@ -147,25 +152,32 @@ export async function createSubscription(
 // Update subscription
 export async function updateSubscription(
   subscriptionId: string,
-  newPriceId: string
+  newPriceId: string,
 ): Promise<Stripe.Subscription> {
   try {
-    const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
-    
-    const updatedSubscription = await getStripe().subscriptions.update(subscriptionId, {
-      items: [
-        {
-          id: subscription.items.data[0].id,
-          price: newPriceId,
-        },
-      ],
-      proration_behavior: 'create_prorations',
-    });
+    const subscription =
+      await getStripe().subscriptions.retrieve(subscriptionId);
 
-    logger.info('Stripe subscription updated', { subscriptionId, newPriceId });
+    const updatedSubscription = await getStripe().subscriptions.update(
+      subscriptionId,
+      {
+        items: [
+          {
+            id: subscription.items.data[0].id,
+            price: newPriceId,
+          },
+        ],
+        proration_behavior: "create_prorations",
+      },
+    );
+
+    logger.info("Stripe subscription updated", { subscriptionId, newPriceId });
     return updatedSubscription;
   } catch (error) {
-    logger.error('Failed to update subscription', error, { subscriptionId, newPriceId });
+    logger.error("Failed to update subscription", error, {
+      subscriptionId,
+      newPriceId,
+    });
     throw error;
   }
 }
@@ -173,7 +185,7 @@ export async function updateSubscription(
 // Cancel subscription
 export async function cancelSubscription(
   subscriptionId: string,
-  immediately: boolean = false
+  immediately: boolean = false,
 ): Promise<Stripe.Subscription> {
   try {
     const subscription = immediately
@@ -182,30 +194,33 @@ export async function cancelSubscription(
           cancel_at_period_end: true,
         });
 
-    logger.info('Stripe subscription cancelled', { 
-      subscriptionId, 
-      immediately 
+    logger.info("Stripe subscription cancelled", {
+      subscriptionId,
+      immediately,
     });
     return subscription;
   } catch (error) {
-    logger.error('Failed to cancel subscription', error, { subscriptionId });
+    logger.error("Failed to cancel subscription", error, { subscriptionId });
     throw error;
   }
 }
 
 // Resume cancelled subscription
 export async function resumeSubscription(
-  subscriptionId: string
+  subscriptionId: string,
 ): Promise<Stripe.Subscription> {
   try {
-    const subscription = await getStripe().subscriptions.update(subscriptionId, {
-      cancel_at_period_end: false,
-    });
+    const subscription = await getStripe().subscriptions.update(
+      subscriptionId,
+      {
+        cancel_at_period_end: false,
+      },
+    );
 
-    logger.info('Stripe subscription resumed', { subscriptionId });
+    logger.info("Stripe subscription resumed", { subscriptionId });
     return subscription;
   } catch (error) {
-    logger.error('Failed to resume subscription', error, { subscriptionId });
+    logger.error("Failed to resume subscription", error, { subscriptionId });
     throw error;
   }
 }
@@ -216,12 +231,12 @@ export async function createCheckoutSession(
   priceId: string,
   successUrl: string,
   cancelUrl: string,
-  trialDays?: number
+  trialDays?: number,
 ): Promise<Stripe.Checkout.Session> {
   try {
     const session = await getStripe().checkout.sessions.create({
       customer: customerId,
-      mode: 'subscription',
+      mode: "subscription",
       line_items: [
         {
           price: priceId,
@@ -230,13 +245,21 @@ export async function createCheckoutSession(
       ],
       success_url: successUrl,
       cancel_url: cancelUrl,
-      ...(trialDays ? { subscription_data: { trial_period_days: trialDays } } : {}),
+      ...(trialDays
+        ? { subscription_data: { trial_period_days: trialDays } }
+        : {}),
     });
 
-    logger.info('Checkout session created', { sessionId: session.id, customerId });
+    logger.info("Checkout session created", {
+      sessionId: session.id,
+      customerId,
+    });
     return session;
   } catch (error) {
-    logger.error('Failed to create checkout session', error, { customerId, priceId });
+    logger.error("Failed to create checkout session", error, {
+      customerId,
+      priceId,
+    });
     throw error;
   }
 }
@@ -244,7 +267,7 @@ export async function createCheckoutSession(
 // Create billing portal session
 export async function createBillingPortalSession(
   customerId: string,
-  returnUrl: string
+  returnUrl: string,
 ): Promise<Stripe.BillingPortal.Session> {
   try {
     const session = await getStripe().billingPortal.sessions.create({
@@ -252,22 +275,27 @@ export async function createBillingPortalSession(
       return_url: returnUrl,
     });
 
-    logger.info('Billing portal session created', { sessionId: session.id, customerId });
+    logger.info("Billing portal session created", {
+      sessionId: session.id,
+      customerId,
+    });
     return session;
   } catch (error) {
-    logger.error('Failed to create billing portal session', error, { customerId });
+    logger.error("Failed to create billing portal session", error, {
+      customerId,
+    });
     throw error;
   }
 }
 
 // Retrieve subscription
 export async function retrieveSubscription(
-  subscriptionId: string
+  subscriptionId: string,
 ): Promise<Stripe.Subscription> {
   try {
     return await getStripe().subscriptions.retrieve(subscriptionId);
   } catch (error) {
-    logger.error('Failed to retrieve subscription', error, { subscriptionId });
+    logger.error("Failed to retrieve subscription", error, { subscriptionId });
     throw error;
   }
 }
@@ -275,7 +303,7 @@ export async function retrieveSubscription(
 // List customer invoices
 export async function listCustomerInvoices(
   customerId: string,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<Stripe.Invoice[]> {
   try {
     const invoices = await getStripe().invoices.list({
@@ -285,19 +313,19 @@ export async function listCustomerInvoices(
 
     return invoices.data;
   } catch (error) {
-    logger.error('Failed to list customer invoices', error, { customerId });
+    logger.error("Failed to list customer invoices", error, { customerId });
     throw error;
   }
 }
 
 // Retrieve invoice
 export async function retrieveInvoice(
-  invoiceId: string
+  invoiceId: string,
 ): Promise<Stripe.Invoice> {
   try {
     return await getStripe().invoices.retrieve(invoiceId);
   } catch (error) {
-    logger.error('Failed to retrieve invoice', error, { invoiceId });
+    logger.error("Failed to retrieve invoice", error, { invoiceId });
     throw error;
   }
 }
@@ -306,12 +334,12 @@ export async function retrieveInvoice(
 export function constructWebhookEvent(
   payload: string | Buffer,
   signature: string,
-  secret: string
+  secret: string,
 ): Stripe.Event {
   try {
     return getStripe().webhooks.constructEvent(payload, signature, secret);
   } catch (error) {
-    logger.error('Failed to construct webhook event', error);
+    logger.error("Failed to construct webhook event", error);
     throw error;
   }
 }
@@ -325,15 +353,14 @@ export function getPlanLimits(plan: keyof typeof SUBSCRIPTION_PLANS) {
 export function canAccessFeature(
   userPlan: keyof typeof SUBSCRIPTION_PLANS,
   feature: keyof typeof SUBSCRIPTION_PLANS.PRO.limits,
-  currentUsage: number
+  currentUsage: number,
 ): boolean {
   const limits = getPlanLimits(userPlan);
   const limit = limits[feature as keyof typeof limits];
 
   // -1 means unlimited
   if (limit === -1) return true;
-  
+
   // Check if usage is within limit
   return currentUsage < (limit || 0);
 }
-
