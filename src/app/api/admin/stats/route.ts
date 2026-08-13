@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { authMiddleware, requireRole, addSecurityHeaders } from '@/lib/middleware';
 import { logger, createErrorResponse, createSuccessResponse } from '@/lib/logger';
+import { countMaterials, countProviders, getMaterialsByIds } from '@/lib/firestore';
 
 // GET /api/admin/stats - Get admin dashboard statistics
 export async function GET(request: NextRequest) {
@@ -67,11 +68,11 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // Total materials
-      prisma.material.count(),
+      // Total materials (Firestore)
+      countMaterials(),
 
-      // Total providers
-      prisma.provider.count(),
+      // Total providers (Firestore)
+      countProviders(),
 
       // Total bookmarks
       prisma.bookmark.count(),
@@ -112,25 +113,34 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // Top bookmarked materials
-      prisma.material.findMany({
-        take: 10,
-        orderBy: {
-          bookmarks: {
-            _count: 'desc',
-          },
-        },
-        select: {
-          id: true,
-          title: true,
-          provider: {
-            select: { name: true },
-          },
+      // Top bookmarked materials (bookmarks in Postgres, material data in Firestore)
+      async () => {
+        const topBookmarks = await prisma.bookmark.groupBy({
+          by: ['materialId'],
           _count: {
-            select: { bookmarks: true },
+            materialId: true,
           },
-        },
-      }),
+          orderBy: {
+            _count: {
+              materialId: 'desc',
+            },
+          },
+          take: 10,
+        });
+
+        const materials = await getMaterialsByIds(
+          topBookmarks.map((b) => b.materialId)
+        );
+        const materialMap = new Map(materials.map((m) => [m.id, m]));
+
+        return topBookmarks.map((b) => ({
+          id: b.materialId,
+          title: materialMap.get(b.materialId)?.title ?? 'Unknown',
+          providerName:
+            materialMap.get(b.materialId)?.providerName ?? 'Unknown',
+          _count: { bookmarks: b._count.materialId },
+        }));
+      },
 
       // User growth over time (last 30 days)
       prisma.$queryRaw`
