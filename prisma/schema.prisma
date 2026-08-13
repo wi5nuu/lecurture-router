@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -77,100 +76,14 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model Material {
-  id           String     @id @default(uuid())
-  title        String
-  source       String
-  providerId   String
-  provider     Provider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  course       String
-  format       String
-  language     String
-  level        String
-  year         Int
-  rating       Float      @default(0)
-  reviewCount  Int        @default(0)
-  price        String
-  accessUrl    String
-  description  String     @db.Text
-  fullContent  String     @db.Text
-  categoryId   String
-  category     Category   @relation(fields: [categoryId], references: [id])
-  instructor   String
-  university   String
-  citations    Int        @default(0)
-  tags         String
-  thumbnail    String?
-  pages        Int?
-  duration     String?
-  isbn         String?
-  doi          String?
-  viewCount    Int        @default(0)
-  downloadCount Int       @default(0)
-  isPublished  Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  
-  bookmarks    Bookmark[]
-  
-  @@index([providerId])
-  @@index([categoryId])
-  @@index([title])
-  @@index([isPublished])
-  @@fulltext([title, description, tags])
-  @@map("materials")
-}
-
-model Provider {
-  id             String     @id @default(uuid())
-  name           String     @unique
-  logo           String
-  description    String     @db.Text
-  totalMaterials Int        @default(0)
-  formats        String
-  languages      String
-  priceModel     String
-  rating         Float      @default(0)
-  url            String
-  categories     String
-  established    Int
-  headquarters   String
-  isActive       Boolean    @default(true)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  
-  materials      Material[]
-  
-  @@index([name])
-  @@index([isActive])
-  @@map("providers")
-}
-
-model Category {
-  id            String     @id @default(uuid())
-  name          String     @unique
-  icon          String
-  materialCount Int        @default(0)
-  description   String
-  color         String
-  slug          String     @unique
-  isActive      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  
-  materials     Material[]
-  
-  @@index([slug])
-  @@index([isActive])
-  @@map("categories")
-}
+// NOTE: Material, Provider, and Category models have been moved to Firebase
+// Firestore (free Spark plan) since they are text-only data. See src/lib/firestore.ts.
 
 model Bookmark {
   id         String   @id @default(uuid())
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   materialId String
-  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
   notes      String?  @db.Text
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
