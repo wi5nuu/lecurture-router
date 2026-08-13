@@ -152,6 +152,28 @@ SENTRY_DSN="https://[key]@[org].ingest.sentry.io/[project]"
 NEXT_PUBLIC_SENTRY_DSN="https://[key]@[org].ingest.sentry.io/[project]"
 ```
 
+#### 8. Firebase (Catalog - Materials, Providers, Categories)
+
+Katalog (materi, provider, kategori) disimpan di **Firebase Firestore** dan hanya berisi teks, sehingga muat di **free Spark plan** (1 GiB storage, 50K reads/day, 20K writes/day). Tidak perlu upgrade berbayar.
+
+```bash
+# 1. Buat project di https://console.firebase.google.com
+# 2. Project Settings > Service accounts > Generate new private key
+#    (file JSON service account akan ter-download)
+# 3. Copy 3 nilai berikut ke environment variables:
+
+FIREBASE_PROJECT_ID="your-project-id"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n....\n-----END PRIVATE KEY-----\n"
+
+# (PENTING: jaga karakter \n di dalam private key tetap utuh.
+#  Alternatif: paste seluruh isi JSON service account ke FIREBASE_SERVICE_ACCOUNT)
+
+# 4. Console > Firestore Database > Create database > Production mode
+# 5. Setelah deploy, sinkronkan katalog dari source data:
+npm run firebase:seed
+```
+
 ---
 
 ## 🔐 Netlify Environment Variables
@@ -197,6 +219,11 @@ MEILISEARCH_MASTER_KEY="..."
 NEXT_PUBLIC_MEILISEARCH_HOST="https://..."
 NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY="..."
 
+# Firebase (catalog: materials, providers, categories)
+FIREBASE_PROJECT_ID="your-project-id"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n....\n-----END PRIVATE KEY-----\n"
+
 # WebSocket (URL WebSocket server Anda)
 WS_PORT="3001"
 NEXT_PUBLIC_WS_URL="wss://your-websocket-server.railway.app"
@@ -241,7 +268,10 @@ npm run prisma:generate
 # 3. Push schema ke database
 npm run prisma:migrate:deploy
 
-# 4. (Optional) Seed data
+# 4. Sinkronkan katalog ke Firebase Firestore (materials, providers, categories)
+npm run firebase:seed
+
+# 5. (Optional) Seed data
 npm run prisma:seed
 ```
 
