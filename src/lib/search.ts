@@ -1,8 +1,13 @@
-import { MeiliSearch } from 'meilisearch';
+import { Meilisearch } from 'meilisearch';
 import { logger } from './logger';
-import prisma from './db';
+import {
+  getMaterialById,
+  getMaterialsByIds,
+  getAllMaterials,
+  getProviderById,
+} from './firestore';
 
-const client = new MeiliSearch({
+const client = new Meilisearch({
   host: process.env.MEILISEARCH_HOST || 'http://localhost:7700',
   apiKey: process.env.MEILISEARCH_MASTER_KEY,
 });
@@ -72,13 +77,7 @@ export async function initializeSearchIndexes() {
 // Index a single material
 export async function indexMaterial(materialId: string) {
   try {
-    const material = await prisma.material.findUnique({
-      where: { id: materialId },
-      include: {
-        provider: { select: { name: true } },
-        category: { select: { name: true } },
-      },
-    });
+    const material = await getMaterialById(materialId);
 
     if (!material) {
       logger.warn('Material not found for indexing', { materialId });
@@ -94,9 +93,9 @@ export async function indexMaterial(materialId: string) {
       university: material.university,
       course: material.course,
       providerId: material.providerId,
-      providerName: material.provider.name,
+      providerName: material.providerName,
       categoryId: material.categoryId,
-      categoryName: material.category.name,
+      categoryName: material.categoryName,
       format: material.format,
       language: material.language,
       level: material.level,
@@ -118,13 +117,7 @@ export async function indexMaterial(materialId: string) {
 // Index multiple materials
 export async function indexMaterials(materialIds: string[]) {
   try {
-    const materials = await prisma.material.findMany({
-      where: { id: { in: materialIds } },
-      include: {
-        provider: { select: { name: true } },
-        category: { select: { name: true } },
-      },
-    });
+    const materials = await getMaterialsByIds(materialIds);
 
     const documents = materials.map((material) => ({
       id: material.id,
@@ -135,9 +128,9 @@ export async function indexMaterials(materialIds: string[]) {
       university: material.university,
       course: material.course,
       providerId: material.providerId,
-      providerName: material.provider.name,
+      providerName: material.providerName,
       categoryId: material.categoryId,
-      categoryName: material.category.name,
+      categoryName: material.categoryName,
       format: material.format,
       language: material.language,
       level: material.level,
@@ -159,55 +152,34 @@ export async function indexMaterials(materialIds: string[]) {
 // Index all materials (for initial sync)
 export async function indexAllMaterials() {
   try {
-    const batchSize = 1000;
-    let skip = 0;
-    let total = 0;
+    const allMaterials = await getAllMaterials();
+    const published = allMaterials.filter((m) => m.isPublished);
 
-    while (true) {
-      const materials = await prisma.material.findMany({
-        where: { isPublished: true },
-        skip,
-        take: batchSize,
-        include: {
-          provider: { select: { name: true } },
-          category: { select: { name: true } },
-        },
-      });
+    const documents = published.map((material) => ({
+      id: material.id,
+      title: material.title,
+      description: material.description,
+      tags: material.tags,
+      instructor: material.instructor,
+      university: material.university,
+      course: material.course,
+      providerId: material.providerId,
+      providerName: material.providerName,
+      categoryId: material.categoryId,
+      categoryName: material.categoryName,
+      format: material.format,
+      language: material.language,
+      level: material.level,
+      year: material.year,
+      rating: material.rating,
+      viewCount: material.viewCount,
+      isPublished: material.isPublished,
+      createdAt: material.createdAt.getTime(),
+    }));
 
-      if (materials.length === 0) break;
-
-      const documents = materials.map((material) => ({
-        id: material.id,
-        title: material.title,
-        description: material.description,
-        tags: material.tags,
-        instructor: material.instructor,
-        university: material.university,
-        course: material.course,
-        providerId: material.providerId,
-        providerName: material.provider.name,
-        categoryId: material.categoryId,
-        categoryName: material.category.name,
-        format: material.format,
-        language: material.language,
-        level: material.level,
-        year: material.year,
-        rating: material.rating,
-        viewCount: material.viewCount,
-        isPublished: material.isPublished,
-        createdAt: material.createdAt.getTime(),
-      }));
-
-      await client.index(MATERIALS_INDEX).addDocuments(documents);
-      
-      total += materials.length;
-      skip += batchSize;
-
-      logger.info('Indexed batch of materials', { count: materials.length, total });
-    }
-
-    logger.info('All materials indexed', { total });
-    return total;
+    await client.index(MATERIALS_INDEX).addDocuments(documents);
+    logger.info('All materials indexed', { count: documents.length });
+    return documents.length;
   } catch (error) {
     logger.error('Failed to index all materials', error);
     throw error;
@@ -309,9 +281,7 @@ export async function getSearchSuggestions(query: string, limit: number = 5) {
 // Index a provider
 export async function indexProvider(providerId: string) {
   try {
-    const provider = await prisma.provider.findUnique({
-      where: { id: providerId },
-    });
+    const provider = await getProviderById(providerId);
 
     if (!provider) return;
 
