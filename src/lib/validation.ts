@@ -129,7 +129,7 @@ export const createNotificationSchema = z.object({
   message: z.string().min(1),
   type: z.enum(['info', 'success', 'warning', 'error']),
   link: z.string().url().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Subscription validation
@@ -152,7 +152,7 @@ export function validateBody<T>(schema: z.ZodSchema<T>, data: unknown): { succes
 export function formatZodErrors(error: z.ZodError): Record<string, string> {
   const formatted: Record<string, string> = {};
   
-  error.errors.forEach((err) => {
+  (error as any).errors.forEach((err: any) => {
     const path = err.path.join('.');
     formatted[path] = err.message;
   });

@@ -45,7 +45,7 @@ export async function generateRefreshToken(payload: Omit<JWTPayload, 'type' | 'j
 export async function verifyAccessToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as JWTPayload;
+    return payload as unknown as JWTPayload;
   } catch (error) {
     console.error('Access token verification failed:', error);
     return null;
@@ -56,7 +56,7 @@ export async function verifyAccessToken(token: string): Promise<JWTPayload | nul
 export async function verifyRefreshToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_REFRESH_SECRET);
-    return payload as JWTPayload;
+    return payload as unknown as JWTPayload;
   } catch (error) {
     console.error('Refresh token verification failed:', error);
     return null;

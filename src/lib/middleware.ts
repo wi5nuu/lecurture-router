@@ -18,7 +18,7 @@ export async function rateLimitMiddleware(
   const windowSeconds = windowMinutes * 60;
 
   // Use provided identifier or fall back to IP
-  const id = identifier || request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const id = identifier || request.headers.get('x-forwarded-for') || 'unknown';
   const key = `rate-limit:${id}`;
 
   const result = await rateLimit.check(key, maxRequests, windowSeconds);
@@ -218,7 +218,7 @@ export async function auditLog(
         action,
         resource,
         resourceId: resourceId || null,
-        ipAddress: request.ip || request.headers.get('x-forwarded-for') || null,
+        ipAddress: request.headers.get('x-forwarded-for') || null,
         userAgent: request.headers.get('user-agent') || null,
         metadata: metadata || null,
       },

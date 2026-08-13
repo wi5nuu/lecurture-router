@@ -106,7 +106,7 @@ class Logger {
   // Performance monitoring
   startTransaction(name: string, operation: string): any {
     if (this.enableSentry) {
-      return Sentry.startTransaction({
+      return (Sentry as any).startTransaction({
         name,
         op: operation,
       });
