@@ -99,15 +99,15 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   // Update subscription
   await prisma.subscription.update({
     where: { id: dbSubscription.id },
-    data: {
-      stripeSubscriptionId: subscription.id,
-      plan,
-      status: subscription.status === 'trialing' ? 'TRIALING' : 'ACTIVE',
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
-      trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-    },
+      data: {
+        stripeSubscriptionId: subscription.id,
+        plan,
+        status: subscription.status === 'trialing' ? 'TRIALING' : 'ACTIVE',
+        currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+        trialStart: (subscription as any).trial_start ? new Date((subscription as any).trial_start * 1000) : null,
+        trialEnd: (subscription as any).trial_end ? new Date((subscription as any).trial_end * 1000) : null,
+      },
   });
 
   // Send email
@@ -151,13 +151,13 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   await prisma.subscription.update({
     where: { id: dbSubscription.id },
-    data: {
-      plan,
-      status: statusMap[subscription.status] || 'INACTIVE',
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    },
+      data: {
+        plan,
+        status: statusMap[subscription.status] || 'INACTIVE',
+        currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      },
   });
 
   logger.info('Subscription updated', { subscriptionId: subscription.id });
@@ -191,8 +191,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   logger.info('Subscription deleted', { subscriptionId: subscription.id });
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  async function handleInvoicePaid(invoice: Stripe.Invoice) {
+    const subscriptionId = (invoice as any).subscription as string;
   
   if (!subscriptionId) return;
 
@@ -219,8 +219,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   logger.info('Invoice paid', { invoiceId: invoice.id });
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+    const subscriptionId = (invoice as any).subscription as string;
   
   if (!subscriptionId) return;
 

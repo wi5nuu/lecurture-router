@@ -7,9 +7,10 @@ import { sendNotification } from '@/lib/notifications';
 // GET /api/admin/users/[id] - Get user details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const authResult = await authMiddleware(request);
     if (!authResult.authenticated || !authResult.user) {
       return authResult.response!;
@@ -21,19 +22,10 @@ export async function GET(
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         subscription: true,
         bookmarks: {
-          include: {
-            material: {
-              select: {
-                id: true,
-                title: true,
-                provider: { select: { name: true } },
-              },
-            },
-          },
           take: 10,
           orderBy: { createdAt: 'desc' },
         },
@@ -69,7 +61,7 @@ export async function GET(
       authResult.user.userId,
       'VIEW_USER',
       'User',
-      params.id,
+      id,
       request
     );
 
@@ -90,9 +82,10 @@ export async function GET(
 // PATCH /api/admin/users/[id] - Update user
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const authResult = await authMiddleware(request);
     if (!authResult.authenticated || !authResult.user) {
       return authResult.response!;
@@ -126,7 +119,7 @@ export async function PATCH(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       select: {
         id: true,
@@ -141,7 +134,7 @@ export async function PATCH(
 
     // Send notification to user
     await sendNotification({
-      userId: params.id,
+      userId: id,
       title: 'Account Updated',
       message: 'Your account has been updated by an administrator.',
       type: 'info',
@@ -152,14 +145,14 @@ export async function PATCH(
       authResult.user.userId,
       'UPDATE_USER',
       'User',
-      params.id,
+      id,
       request,
       updateData
     );
 
     logger.info('User updated by admin', {
       adminId: authResult.user.userId,
-      userId: params.id,
+      userId: id,
       updates: updateData,
     });
 
@@ -177,9 +170,10 @@ export async function PATCH(
 // DELETE /api/admin/users/[id] - Delete user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const authResult = await authMiddleware(request);
     if (!authResult.authenticated || !authResult.user) {
       return authResult.response!;
@@ -191,7 +185,7 @@ export async function DELETE(
     }
 
     // Prevent self-deletion
-    if (params.id === authResult.user.userId) {
+    if (id === authResult.user.userId) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
         { status: 400 }
@@ -200,7 +194,7 @@ export async function DELETE(
 
     // Delete user (cascading deletes will handle related records)
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     // Audit log
@@ -208,13 +202,13 @@ export async function DELETE(
       authResult.user.userId,
       'DELETE_USER',
       'User',
-      params.id,
+      id,
       request
     );
 
     logger.info('User deleted by admin', {
       adminId: authResult.user.userId,
-      userId: params.id,
+      userId: id,
     });
 
     const response = NextResponse.json(
