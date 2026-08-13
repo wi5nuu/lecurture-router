@@ -2,6 +2,8 @@ import { pubsub } from './redis';
 import prisma from './db';
 import { logger } from './logger';
 import { sendNotificationEmail } from './email';
+import { Prisma } from '../generated/prisma';
+import { getMaterialById } from './firestore';
 
 export interface NotificationPayload {
   userId: string;
@@ -24,7 +26,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
         message: payload.message,
         type: payload.type,
         link: payload.link || null,
-        metadata: payload.metadata || null,
+        metadata: (payload.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
       },
     });
 
@@ -131,10 +133,7 @@ export async function getUnreadNotificationCount(userId: string): Promise<number
 // Material update notification
 export async function notifyMaterialUpdate(materialId: string): Promise<void> {
   try {
-    const material = await prisma.material.findUnique({
-      where: { id: materialId },
-      include: { provider: true, category: true },
-    });
+    const material = await getMaterialById(materialId);
 
     if (!material) return;
 
@@ -174,10 +173,7 @@ export async function notifyMaterialUpdate(materialId: string): Promise<void> {
 // New material notification
 export async function notifyNewMaterial(materialId: string): Promise<void> {
   try {
-    const material = await prisma.material.findUnique({
-      where: { id: materialId },
-      include: { provider: true, category: true },
-    });
+    const material = await getMaterialById(materialId);
 
     if (!material) return;
 
