@@ -39,16 +39,81 @@ const formatColors: Record<string, string> = {
   "E-Book": "border-violet/20 bg-violet/5 text-violet",
 };
 
-function extractToC(content: string) {
-  const lines = content.split("\n");
-  const toc: { text: string; index: number }[] = [];
-  const pattern = /^(BAB|MODUL|SESI)\s+[\dIVXLCDM]+.*$/gim;
-  lines.forEach((line, i) => {
-    if (pattern.test(line.trim())) {
-      toc.push({ text: line.trim(), index: i });
+interface ContentBlock {
+  type: "heading" | "body";
+  text: string;
+}
+
+const CHAPTER_PATTERN = /^(BAB|BAGIAN|MODUL|SESI)\s+[\dIVXLCDM]+[.:]?\s+.*$/i;
+
+function isSectionTitle(line: string): boolean {
+  const t = line.trim();
+  if (!t || t.length > 80) return false;
+  if (CHAPTER_PATTERN.test(t)) return true;
+  // Short capitalized sentence ending with a period → section heading
+  if (/^[-*\d]/.test(t)) return false;
+  if (!/^[A-ZÀ-ÖØ-ÞÄÖÜ][^,。"”]*(?:\.)$/.test(t)) return false;
+  return true;
+}
+
+function parseContentSections(content: string): ContentBlock[] {
+  const blocks = content
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+  const sections: ContentBlock[] = [];
+  let buffer: string[] = [];
+
+  const flush = () => {
+    if (buffer.length > 0) {
+      sections.push({ type: "body", text: buffer.join("\n\n") });
+      buffer = [];
     }
-  });
-  return toc;
+  };
+
+  for (const block of blocks) {
+    const lines = block.split("\n").map((l) => l.trim());
+    if (isSectionTitle(lines[0] ?? "")) {
+      flush();
+      const titleLines = [lines[0]!];
+      let k = 1;
+      while (k < lines.length && isSectionTitle(lines[k] ?? "")) {
+        titleLines.push(lines[k]!);
+        k++;
+      }
+      sections.push({
+        type: "heading",
+        text: titleLines.join(" "),
+      });
+      if (k < lines.length) {
+        buffer.push(lines.slice(k).join("\n").trim());
+      }
+    } else {
+      buffer.push(block);
+    }
+  }
+  flush();
+  return sections;
+}
+
+function toRoman(num: number): string {
+  const table: [number, string][] = [
+    [10, "X"],
+    [9, "IX"],
+    [5, "V"],
+    [4, "IV"],
+    [1, "I"],
+  ];
+  let n = num;
+  let out = "";
+  for (const [value, symbol] of table) {
+    while (n >= value) {
+      out += symbol;
+      n -= value;
+    }
+  }
+  return out;
 }
 
 function estimateReadingTime(text: string) {
@@ -79,13 +144,25 @@ export function MaterialDetailClient({ material, related }: Props) {
   const [citationCopied, setCitationCopied] = useState<"apa" | "mla" | null>(
     null,
   );
-  const [isPrinting, setIsPrinting] = useState(false);
 
-  const paragraphs = material.fullContent
-    ? material.fullContent.split("\n\n").filter(Boolean)
-    : [];
+  const contentBlocks = parseContentSections(material.fullContent ?? "");
+  const tocBlocks = contentBlocks
+    .map((block, index) => ({ text: block.text, index }))
+    .filter((_, i) => contentBlocks[i]!.type === "heading");
+  const firstBodyIndex = contentBlocks.findIndex(
+    (block) => block.type === "body",
+  );
 
-  const toc = extractToC(material.fullContent);
+  const headingNumbers = new Map<number, string>();
+  {
+    let n = 1;
+    contentBlocks.forEach((block, i) => {
+      if (block.type === "heading") {
+        headingNumbers.set(i, toRoman(n));
+        n++;
+      }
+    });
+  }
   const { words, minutes } = estimateReadingTime(material.fullContent);
 
   const handleCopy = useCallback(async () => {
@@ -155,11 +232,7 @@ export function MaterialDetailClient({ material, related }: Props) {
   }, [material]);
 
   const handlePrint = useCallback(() => {
-    setIsPrinting(true);
-    setTimeout(() => {
-      window.print();
-      setIsPrinting(false);
-    }, 100);
+    window.print();
   }, []);
 
   const handleCopyCitation = useCallback(
@@ -308,25 +381,28 @@ export function MaterialDetailClient({ material, related }: Props) {
                     )}
                   </div>
 
-                  {toc.length > 0 && (
+                  {tocBlocks.length > 0 && (
                     <Card className="print:hidden">
                       <CardContent className="p-6">
                         <h3 className="font-semibold mb-3 inline-flex items-center gap-2">
                           <List className="h-4 w-4" /> Daftar Isi
                         </h3>
                         <nav className="space-y-1">
-                          {toc.map((entry, i) => (
+                          {tocBlocks.map((entry, i) => (
                             <button
                               key={i}
                               onClick={() => {
                                 const el = document.getElementById(
-                                  `section-${i}`,
+                                  `section-${entry.index}`,
                                 );
                                 el?.scrollIntoView({ behavior: "smooth" });
                               }}
-                              className="block w-full text-left text-sm text-muted-foreground hover:text-blue transition-colors py-1 px-2 rounded hover:bg-muted"
+                              className="flex w-full items-center gap-2 text-left text-sm text-muted-foreground hover:text-blue transition-colors py-1 px-2 rounded hover:bg-muted"
                             >
-                              {entry.text}
+                              <span className="font-mono text-xs text-blue/70 w-6 shrink-0">
+                                {headingNumbers.get(entry.index)}
+                              </span>
+                              <span className="truncate">{entry.text}</span>
                             </button>
                           ))}
                         </nav>
@@ -335,47 +411,95 @@ export function MaterialDetailClient({ material, related }: Props) {
                   )}
 
                   <Card>
-                    <CardContent className="p-4 sm:p-6">
-                      <h3 className="font-semibold mb-4 inline-flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" /> Konten Lengkap
-                      </h3>
-                      <div className="prose prose-sm dark:prose-invert max-w-none space-y-4 leading-relaxed">
-                        {paragraphs.map((para, i) => {
-                          const isHeading =
-                            /^(BAB|MODUL|SESI)\s+[\dIVXLCDM]+/i.test(
-                              para.trim(),
-                            );
-                          if (isHeading) {
+                    <CardContent className="p-6 sm:p-10 print:p-4">
+                      {/* Journal article header */}
+                      <div className="border-b border-border pb-6 mb-8 print:border-black/20">
+                        <p className="text-[11px] uppercase tracking-[0.25em] text-blue/80 font-semibold mb-3">
+                          {material.format} ·{" "}
+                          {material.course || material.source}
+                        </p>
+                        <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                          {material.title}
+                        </h2>
+                        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                          {material.instructor && (
+                            <span className="inline-flex items-center gap-1.5">
+                              <User className="h-3.5 w-3.5" />
+                              {material.instructor}
+                            </span>
+                          )}
+                          {material.university && (
+                            <span className="inline-flex items-center gap-1.5">
+                              <Building2 className="h-3.5 w-3.5" />
+                              {material.university}
+                            </span>
+                          )}
+                          <span className="inline-flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {material.year}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5">
+                            <Globe className="h-3.5 w-3.5" />
+                            {material.source}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Abstract */}
+                      <div className="mb-8">
+                        <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mb-2">
+                          Abstrak
+                        </p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {material.description}
+                        </p>
+                      </div>
+
+                      {/* Article body */}
+                      <article className="font-serif text-[15px] sm:text-base leading-8 text-foreground/90">
+                        {contentBlocks.map((block, i) => {
+                          if (block.type === "heading") {
+                            const chapter = headingNumbers.get(i);
                             return (
-                              <h4
+                              <div
                                 key={i}
                                 id={`section-${i}`}
-                                className="text-lg font-bold text-blue mt-6 mb-3 scroll-mt-24"
+                                className="my-8 scroll-mt-24 print:my-6"
                               >
-                                {para.trim()}
-                              </h4>
+                                {chapter && (
+                                  <p className="text-[11px] uppercase tracking-[0.3em] text-blue/70 font-sans font-semibold mb-2">
+                                    BAGIAN {chapter}
+                                  </p>
+                                )}
+                                <h3 className="font-sans text-lg font-bold text-foreground tracking-tight">
+                                  {block.text}
+                                </h3>
+                                <div className="mt-3 h-px bg-gradient-to-r from-blue/40 via-border to-transparent" />
+                              </div>
                             );
                           }
+                          const isIntro = i === firstBodyIndex;
                           return (
                             <p
                               key={i}
-                              className="text-sm sm:text-base text-foreground/90 leading-7 indent-0 first:indent-0"
+                              className={
+                                isIntro
+                                  ? "text-justify first-letter:float-left first-letter:mr-3 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.9] first-letter:font-bold first-letter:text-blue"
+                                  : "text-justify"
+                              }
                             >
-                              {para
-                                .trim()
-                                .split("\n")
-                                .map((line, j) => (
-                                  <span key={j}>
-                                    {line}
-                                    {j < para.trim().split("\n").length - 1 && (
-                                      <br />
-                                    )}
-                                  </span>
-                                ))}
+                              {block.text.split("\n").map((line, j) => (
+                                <span key={j}>
+                                  {line}
+                                  {j < block.text.split("\n").length - 1 && (
+                                    <br />
+                                  )}
+                                </span>
+                              ))}
                             </p>
                           );
                         })}
-                      </div>
+                      </article>
                     </CardContent>
                   </Card>
 
