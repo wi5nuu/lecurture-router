@@ -1,22 +1,21 @@
-import Database from "better-sqlite3";
-import path from "path";
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../generated/prisma';
 
-const DB_PATH = path.join(process.cwd(), "dev.db");
+const prismaClientSingleton = () => {
+  const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL,
+  });
+  return new PrismaClient({ adapter });
+};
 
-let db: Database.Database | null = null;
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
-export function getDb(): Database.Database {
-  if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma("journal_mode = WAL");
-    db.pragma("foreign_keys = ON");
-  }
-  return db;
-}
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClientSingleton | undefined;
+};
 
-export function closeDb(): void {
-  if (db) {
-    db.close();
-    db = null;
-  }
-}
+const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
+
+export default prisma;
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
