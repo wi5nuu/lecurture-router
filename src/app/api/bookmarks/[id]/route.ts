@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
 import { verifyToken } from "@/lib/auth";
 
 export async function DELETE(
@@ -18,16 +18,21 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const db = getDb();
-    const bookmark = db.prepare(
-      "SELECT id FROM Bookmark WHERE id = ? AND userId = ?"
-    ).get(id, payload.userId);
+    
+    const bookmark = await prisma.bookmark.findFirst({
+      where: {
+        id,
+        userId: payload.userId
+      }
+    });
 
     if (!bookmark) {
       return NextResponse.json({ error: "Bookmark not found" }, { status: 404 });
     }
 
-    db.prepare("DELETE FROM Bookmark WHERE id = ?").run(id);
+    await prisma.bookmark.delete({
+      where: { id }
+    });
 
     return NextResponse.json({ message: "Bookmark removed" });
   } catch (error) {
