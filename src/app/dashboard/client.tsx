@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { MaterialCard } from "@/components/shared/material-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,9 +9,9 @@ import {
   X, GraduationCap, FlaskConical, Monitor,
   Settings, HeartPulse, TrendingUp, Scale, Users,
   BookOpen as BookOpenIcon, Palette, Sprout, Compass,
-  Search, Menu,
+  Search, Menu, Loader2, RefreshCw,
 } from "lucide-react";
-import { materials, categories } from "@/lib/data";
+import { type Material, type Category } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -34,7 +33,115 @@ const formats = ["Semua", "PDF", "Video", "Slide", "E-Book"];
 const levels = ["Semua", "S1", "S2", "S3", "Umum"];
 const prices = ["Semua", "Gratis", "Freemium", "Premium"];
 
+interface ApiMaterial {
+  id: string;
+  title: string;
+  source: string;
+  course: string;
+  format: string;
+  language: string;
+  level: string;
+  year: number;
+  rating: number;
+  reviewCount: number;
+  price: string;
+  accessUrl: string;
+  description: string;
+  fullContent: string;
+  instructor: string;
+  university: string;
+  citations: number;
+  tags: string[];
+  thumbnail?: string;
+  pages?: number;
+  duration?: string;
+  isbn?: string;
+  doi?: string;
+  category: { id: string; name: string };
+  provider: { id: string; name: string };
+}
+
+interface ApiCategory {
+  id: string;
+  name: string;
+  icon: string;
+  materialCount: number;
+  description: string;
+  color: string;
+}
+
+function toMaterial(m: ApiMaterial): Material {
+  return {
+    id: m.id,
+    title: m.title,
+    source: m.source || m.provider?.name || "",
+    provider: m.provider?.id || "",
+    course: m.course,
+    format: m.format as Material["format"],
+    language: m.language,
+    level: m.level as Material["level"],
+    year: m.year,
+    rating: m.rating,
+    reviewCount: m.reviewCount,
+    price: m.price as Material["price"],
+    accessUrl: m.accessUrl,
+    description: m.description,
+    fullContent: m.fullContent,
+    category: m.category?.id || "",
+    instructor: m.instructor,
+    university: m.university,
+    citations: m.citations,
+    tags: m.tags ?? [],
+    thumbnail: m.thumbnail,
+    pages: m.pages,
+    duration: m.duration,
+    isbn: m.isbn,
+    doi: m.doi,
+  };
+}
+
+async function fetchCatalog(): Promise<{
+  materials: Material[];
+  categories: Category[];
+}> {
+  const [materialsRes, categoriesRes] = await Promise.all([
+    fetch("/api/materials?limit=50&sort=rating"),
+    fetch("/api/categories"),
+  ]);
+
+  if (!materialsRes.ok) {
+    const data = await materialsRes.json().catch(() => null);
+    throw new Error(data?.error || "Gagal memuat materi");
+  }
+  if (!categoriesRes.ok) {
+    const data = await categoriesRes.json().catch(() => null);
+    throw new Error(data?.error || "Gagal memuat kategori");
+  }
+
+  const materialsData = await materialsRes.json();
+  const categoriesData = await categoriesRes.json();
+
+  return {
+    materials: (materialsData.materials ?? []).map(toMaterial),
+    categories: (categoriesData.categories ?? []).map(
+      (c: ApiCategory) =>
+        ({
+          id: c.id,
+          name: c.name,
+          icon: c.icon,
+          materialCount: c.materialCount ?? 0,
+          description: c.description,
+          color: c.color,
+        }) satisfies Category
+    ),
+  };
+}
+
 export function DashboardClient() {
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedFormat, setSelectedFormat] = useState("Semua");
   const [selectedLevel, setSelectedLevel] = useState("Semua");
@@ -46,6 +153,50 @@ export function DashboardClient() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const ITEMS_PER_PAGE = 6;
+
+  const handleRetry = () => {
+    setLoading(true);
+    setLoadError(null);
+    void (async () => {
+      try {
+        const data = await fetchCatalog();
+        setMaterials(data.materials);
+        setCategories(data.categories);
+      } catch (error) {
+        setLoadError(
+          error instanceof Error ? error.message : "Terjadi kesalahan"
+        );
+      } finally {
+        setLoading(false);
+      }
+    })();
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function run() {
+      try {
+        const data = await fetchCatalog();
+        if (cancelled) return;
+        setMaterials(data.materials);
+        setCategories(data.categories);
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error ? error.message : "Terjadi kesalahan"
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = materials.filter((m) => {
     if (selectedCategory && m.category !== selectedCategory) return false;
@@ -306,12 +457,32 @@ export function DashboardClient() {
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                   : "flex flex-col gap-3"
               )}>
-                {displayed.map((material, i) => (
+                {loading && (
+                  <div className="col-span-full flex flex-col items-center justify-center py-20">
+                    <Loader2 className="h-8 w-8 text-blue animate-spin mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      Memuat materi dari Firebase...
+                    </p>
+                  </div>
+                )}
+
+                {!loading && loadError && (
+                  <div className="col-span-full text-center py-20">
+                    <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Gagal memuat materi</h3>
+                    <p className="text-sm text-muted-foreground mb-4">{loadError}</p>
+                    <Button variant="outline" className="gap-2" onClick={handleRetry}>
+                      <RefreshCw className="h-4 w-4" /> Coba Lagi
+                    </Button>
+                  </div>
+                )}
+
+                {!loading && !loadError && displayed.map((material, i) => (
                   <MaterialCard key={material.id} material={material} index={i} />
                 ))}
               </div>
 
-              {filtered.length === 0 && (
+              {!loading && !loadError && filtered.length === 0 && (
                 <div className="text-center py-20">
                   <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Tidak ada materi ditemukan</h3>
